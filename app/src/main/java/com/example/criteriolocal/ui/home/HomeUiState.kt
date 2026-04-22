@@ -5,6 +5,7 @@ import com.example.criteriolocal.domain.model.AvailabilityOption
 import com.example.criteriolocal.domain.model.BusinessWithCategory
 import com.example.criteriolocal.domain.model.CatalogOption
 import com.example.criteriolocal.domain.model.Category
+import com.example.criteriolocal.domain.model.NearbyPlace
 import com.example.criteriolocal.domain.model.Quality
 import com.example.criteriolocal.domain.model.ServiceModeOption
 import com.example.criteriolocal.domain.model.UsageFrequencyOption
@@ -17,6 +18,9 @@ data class HomeUiState(
     val ethicalNotice: String = AppCatalogs.ethicalNotice,
     val categories: List<Category> = emptyList(),
     val businesses: List<BusinessWithCategory> = emptyList(),
+    val remotePlaces: List<NearbyPlace> = emptyList(),
+    val remotePlacesStatus: String? = null,
+    val remotePlacesError: String? = null,
     val qualities: List<Quality> = emptyList(),
     val users: List<User> = emptyList(),
     val ratingScale: List<Int> = AppCatalogs.ratingScale,

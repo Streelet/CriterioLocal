@@ -48,15 +48,22 @@ data class CategoryEntity(
             onDelete = ForeignKey.RESTRICT,
         ),
     ],
-    indices = [Index(value = ["category_id"])],
+    indices = [
+        Index(value = ["category_id"]),
+        Index(value = ["google_place_id"], unique = true),
+    ],
 )
 data class BusinessEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    @ColumnInfo(name = "google_place_id")
+    val googlePlaceId: String? = null,
     val name: String,
     val description: String,
     val address: String,
-    val phone: String,
+    val phone: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     @ColumnInfo(name = "category_id")
     val categoryId: Long,
     val status: BusinessStatus,

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +39,7 @@ fun HomeScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("CriterioLocal · Fase 1") },
+                title = { Text("CriterioLocal - Fase 1") },
             )
         },
     ) { innerPadding ->
@@ -66,17 +65,36 @@ fun HomeScreen(
                         title = "Base estructural lista",
                         lines = listOf(
                             "Capas: core, data, domain y ui.",
-                            "Persistencia local configurada con Room.",
-                            "Entidades base: usuario, categoría, negocio, valoración, cualidad, vínculo y evidencia.",
-                            "Catálogos cerrados preparados para formularios estructurados.",
+                            "Persistencia hibrida preparada: Room local + Google Places remoto.",
+                            "Entidades base: usuario, categoria, negocio, valoracion, cualidad, vinculo y evidencia.",
+                            "Catalogos cerrados y cliente HTTP listos para fases posteriores.",
+                            "API key remota inyectada desde variable de entorno en compilacion.",
                         ),
                     )
+                }
+
+                uiState.remotePlacesStatus?.let { status ->
+                    item {
+                        SummaryCard(
+                            title = "Estado de la API",
+                            lines = listOf("Nearby Search: $status"),
+                        )
+                    }
+                }
+
+                uiState.remotePlacesError?.let { message ->
+                    item {
+                        SummaryCard(
+                            title = "Estado de la API",
+                            lines = listOf(message),
+                        )
+                    }
                 }
 
                 uiState.errorMessage?.let { message ->
                     item {
                         SummaryCard(
-                            title = "Estado de inicialización",
+                            title = "Estado de inicializacion",
                             lines = listOf(message),
                         )
                     }
@@ -84,36 +102,82 @@ fun HomeScreen(
 
                 item {
                     SummaryCard(
-                        title = "Aviso ético",
+                        title = "Aviso etico",
                         lines = listOf(uiState.ethicalNotice),
                     )
                 }
 
                 item {
                     SummaryCard(
-                        title = "Catálogos de valoración",
+                        title = "Catalogos de valoracion",
                         lines = listOf(
-                            "Escala numérica: ${uiState.ratingScale.joinToString()}",
+                            "Escala numerica: ${uiState.ratingScale.joinToString()}",
                             "Tiempo de espera: ${uiState.waitTimeOptions.joinToString { it.label }}",
                             "Frecuencia de uso: ${uiState.usageFrequencyOptions.joinToString { it.label }}",
                             "Disponibilidad: ${uiState.availabilityOptions.joinToString { it.label }}",
-                            "Tipo de atención: ${uiState.serviceModeOptions.joinToString { it.label }}",
+                            "Tipo de atencion: ${uiState.serviceModeOptions.joinToString { it.label }}",
                         ),
                     )
                 }
 
                 item {
                     SummaryCard(
-                        title = "Categorías iniciales",
+                        title = "Categorias iniciales",
                         lines = uiState.categories.map { "${it.id}. ${it.name}: ${it.description}" },
                     )
                 }
 
                 item {
                     SummaryCard(
-                        title = "Negocios demo",
+                        title = if (uiState.remotePlaces.isNotEmpty()) {
+                            "Negocios demo consumidos desde la API"
+                        } else {
+                            "Negocios demo locales"
+                        },
+                        lines = if (uiState.remotePlaces.isNotEmpty()) {
+                            uiState.remotePlaces.map { place ->
+                                buildString {
+                                    append(place.name)
+                                    place.address?.takeIf { it.isNotBlank() }?.let {
+                                        append(" - ")
+                                        append(it)
+                                    }
+                                    append(" - ")
+                                    append("${place.latitude}, ${place.longitude}")
+                                    place.rating?.let {
+                                        append(" - rating ")
+                                        append(it)
+                                    }
+                                    place.userRatingsTotal?.let {
+                                        append(" - opiniones ")
+                                        append(it)
+                                    }
+                                }
+                            }
+                        } else {
+                            uiState.businesses.map {
+                                buildString {
+                                    append(it.business.name)
+                                    append(" - ")
+                                    append(it.category.name)
+                                    append(" - ")
+                                    append(it.business.address)
+                                    val coordinates = listOfNotNull(it.business.latitude, it.business.longitude)
+                                    if (coordinates.size == 2) {
+                                        append(" - ")
+                                        append("${coordinates[0]}, ${coordinates[1]}")
+                                    }
+                                }
+                            }
+                        },
+                    )
+                }
+
+                item {
+                    SummaryCard(
+                        title = "Negocios locales base",
                         lines = uiState.businesses.map {
-                            "${it.business.name} · ${it.category.name} · ${it.business.address}"
+                            "${it.business.name} - ${it.category.name} - ${it.business.address}"
                         },
                     )
                 }
@@ -122,7 +186,7 @@ fun HomeScreen(
                     SummaryCard(
                         title = "Cualidades oficiales",
                         lines = uiState.qualities.map { quality ->
-                            val applicability = quality.applicableCategoryId?.let { " · categoría $it" } ?: ""
+                            val applicability = quality.applicableCategoryId?.let { " - categoria $it" } ?: ""
                             "${quality.name}$applicability"
                         },
                     )
@@ -131,7 +195,7 @@ fun HomeScreen(
                 item {
                     SummaryCard(
                         title = "Usuarios semilla",
-                        lines = uiState.users.map { "${it.name} · ${it.email}" },
+                        lines = uiState.users.map { "${it.name} - ${it.email}" },
                     )
                 }
             }
@@ -177,7 +241,7 @@ private fun HomeScreenPreview() {
             uiState = HomeUiState(
                 isLoading = false,
                 categories = listOf(
-                    Category(1, "Laboratorio clínico", "Pruebas diagnósticas."),
+                    Category(1, "Laboratorio clinico", "Pruebas diagnosticas."),
                     Category(2, "Farmacia", "Venta de medicamentos."),
                 ),
                 businesses = listOf(
@@ -185,18 +249,20 @@ private fun HomeScreenPreview() {
                         business = Business(
                             id = 1,
                             name = "Laboratorio Vida",
-                            description = "Atención diagnóstica.",
+                            description = "Atencion diagnostica.",
                             address = "4a Avenida 12-45",
                             phone = "5550-0101",
+                            latitude = 14.7924,
+                            longitude = -89.5450,
                             categoryId = 1,
                             status = BusinessStatus.ACTIVE,
                         ),
-                        category = Category(1, "Laboratorio clínico", "Pruebas diagnósticas."),
+                        category = Category(1, "Laboratorio clinico", "Pruebas diagnosticas."),
                     ),
                 ),
                 qualities = listOf(
-                    Quality(1, "Atención rápida", "Atención en poco tiempo.", null, CatalogStatus.ACTIVE),
-                    Quality(2, "Trato amable", "Atención cordial.", null, CatalogStatus.ACTIVE),
+                    Quality(1, "Atencion rapida", "Atencion en poco tiempo.", null, CatalogStatus.ACTIVE),
+                    Quality(2, "Trato amable", "Atencion cordial.", null, CatalogStatus.ACTIVE),
                 ),
             ),
         )

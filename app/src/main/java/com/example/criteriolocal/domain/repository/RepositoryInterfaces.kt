@@ -4,6 +4,8 @@ import com.example.criteriolocal.domain.model.Business
 import com.example.criteriolocal.domain.model.BusinessWithCategory
 import com.example.criteriolocal.domain.model.Category
 import com.example.criteriolocal.domain.model.Evidence
+import com.example.criteriolocal.domain.model.NearbyPlaceSearchRequest
+import com.example.criteriolocal.domain.model.NearbyPlaceSearchResult
 import com.example.criteriolocal.domain.model.Quality
 import com.example.criteriolocal.domain.model.Rating
 import com.example.criteriolocal.domain.model.RatingDetails
@@ -42,6 +44,10 @@ interface QualityRepository {
     fun observeQualities(): Flow<List<Quality>>
     fun observeQualitiesByCategory(categoryId: Long): Flow<List<Quality>>
     suspend fun saveQualities(qualities: List<Quality>)
+}
+
+interface RemotePlaceRepository {
+    suspend fun searchNearby(request: NearbyPlaceSearchRequest): NearbyPlaceSearchResult
 }
 
 interface RatingRepository {

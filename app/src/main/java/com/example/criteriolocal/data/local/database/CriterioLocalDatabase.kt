@@ -31,7 +31,7 @@ import com.example.criteriolocal.data.local.entity.UserEntity
         RatingQualityEntity::class,
         EvidenceEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 @TypeConverters(EnumConverters::class)
@@ -50,7 +50,7 @@ abstract class CriterioLocalDatabase : RoomDatabase() {
                 context,
                 CriterioLocalDatabase::class.java,
                 "criterio_local.db",
-            ).build()
+            ).fallbackToDestructiveMigration().build()
         }
     }
 }

@@ -17,10 +17,13 @@ data class Category(
 
 data class Business(
     val id: Long = 0,
+    val googlePlaceId: String? = null,
     val name: String,
     val description: String,
     val address: String,
-    val phone: String,
+    val phone: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val categoryId: Long,
     val status: BusinessStatus,
 )

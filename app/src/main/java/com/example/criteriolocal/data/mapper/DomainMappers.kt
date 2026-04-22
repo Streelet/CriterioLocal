@@ -53,20 +53,26 @@ internal fun Category.asEntity(): CategoryEntity = CategoryEntity(
 
 internal fun BusinessEntity.asDomain(): Business = Business(
     id = id,
+    googlePlaceId = googlePlaceId,
     name = name,
     description = description,
     address = address,
     phone = phone,
+    latitude = latitude,
+    longitude = longitude,
     categoryId = categoryId,
     status = status,
 )
 
 internal fun Business.asEntity(): BusinessEntity = BusinessEntity(
     id = id,
+    googlePlaceId = googlePlaceId,
     name = name,
     description = description,
     address = address,
     phone = phone,
+    latitude = latitude,
+    longitude = longitude,
     categoryId = categoryId,
     status = status,
 )
