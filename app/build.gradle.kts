@@ -18,10 +18,7 @@ val googlePlacesApiKey = providers.environmentVariable("GOOGLE_PLACES_API_KEY").
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-<<<<<<< HEAD
-=======
     alias(libs.plugins.ksp)
->>>>>>> feature/backend-Modelado-Datos-Arquitectura-Base
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -63,10 +60,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-<<<<<<< HEAD
-=======
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
->>>>>>> feature/backend-Modelado-Datos-Arquitectura-Base
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -78,9 +72,6 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
-<<<<<<< HEAD
-    implementation(libs.kotlinx.serialization.json)
-=======
     implementation(libs.coil.network.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.room.runtime)
@@ -89,7 +80,6 @@ dependencies {
     implementation(libs.retrofit.kotlinx.serialization.converter)
     implementation(libs.okhttp.core)
     ksp(libs.androidx.room.compiler)
->>>>>>> feature/backend-Modelado-Datos-Arquitectura-Base
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
