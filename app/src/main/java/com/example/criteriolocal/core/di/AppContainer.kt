@@ -58,6 +58,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
         DefaultRemotePlaceRepository(
             apiService = googlePlacesApiService,
             apiKey = BuildConfig.GOOGLE_PLACES_API_KEY,
+            baseUrl = BuildConfig.GOOGLE_PLACES_BASE_URL,
         )
     }
 

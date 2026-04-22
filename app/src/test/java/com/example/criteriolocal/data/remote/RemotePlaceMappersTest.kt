@@ -4,6 +4,7 @@ import com.example.criteriolocal.data.remote.dto.GeometryDto
 import com.example.criteriolocal.data.remote.dto.LocationDto
 import com.example.criteriolocal.data.remote.dto.NearbySearchResponseDto
 import com.example.criteriolocal.data.remote.dto.OpeningHoursDto
+import com.example.criteriolocal.data.remote.dto.PhotoDto
 import com.example.criteriolocal.data.remote.dto.PlaceResultDto
 import com.example.criteriolocal.data.remote.mapper.asDomain
 import org.junit.Assert.assertEquals
@@ -31,6 +32,13 @@ class RemotePlaceMappersTest {
                     name = "Farmavital L&N",
                     placeId = "ChIJ7fWfyIYxYo8R9Gy1r1pI_eI",
                     openingHours = OpeningHoursDto(openNow = true),
+                    photos = listOf(
+                        PhotoDto(
+                            photoReference = "photo-ref-123",
+                            width = 1080,
+                            height = 1920,
+                        ),
+                    ),
                     rating = 5.0,
                     types = listOf("pharmacy", "store"),
                     userRatingsTotal = 10,
@@ -49,13 +57,14 @@ class RemotePlaceMappersTest {
             ),
         )
 
-        val result = response.asDomain()
+        val result = response.asDomain { "https://example.com/photo/$it" }
 
         assertEquals("OK", result.status)
         assertEquals("next-page-token", result.nextPageToken)
         assertEquals(1, result.places.size)
         assertEquals("Farmavital L&N", result.places.first().name)
         assertEquals("ChIJ7fWfyIYxYo8R9Gy1r1pI_eI", result.places.first().googlePlaceId)
+        assertEquals("https://example.com/photo/photo-ref-123", result.places.first().photoUrl)
         assertTrue("pharmacy" in result.places.first().types)
     }
 
@@ -78,11 +87,12 @@ class RemotePlaceMappersTest {
             ),
         )
 
-        val place = response.asDomain().places.first()
+        val place = response.asDomain { "https://example.com/photo/$it" }.places.first()
 
         assertEquals("Farmacia Aquedah", place.name)
         assertNull(place.phone)
         assertNull(place.rating)
         assertNull(place.isOpenNow)
+        assertNull(place.photoUrl)
     }
 }

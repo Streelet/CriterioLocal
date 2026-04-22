@@ -5,11 +5,13 @@ import com.example.criteriolocal.data.remote.mapper.asDomain
 import com.example.criteriolocal.domain.model.NearbyPlaceSearchRequest
 import com.example.criteriolocal.domain.model.NearbyPlaceSearchResult
 import com.example.criteriolocal.domain.repository.RemotePlaceRepository
+import java.net.URLEncoder
 import java.util.Locale
 
 class DefaultRemotePlaceRepository(
     private val apiService: GooglePlacesApiService,
     private val apiKey: String,
+    private val baseUrl: String = "https://maps.googleapis.com/",
 ) : RemotePlaceRepository {
     override suspend fun searchNearby(request: NearbyPlaceSearchRequest): NearbyPlaceSearchResult {
         require(apiKey.isNotBlank()) {
@@ -23,7 +25,13 @@ class DefaultRemotePlaceRepository(
             apiKey = apiKey,
         )
 
-        return response.asDomain()
+        return response.asDomain(::buildPhotoUrl)
+    }
+
+    private fun buildPhotoUrl(photoReference: String): String {
+        val encodedReference = URLEncoder.encode(photoReference, Charsets.UTF_8.name())
+        val encodedApiKey = URLEncoder.encode(apiKey, Charsets.UTF_8.name())
+        return "${baseUrl}maps/api/place/photo?maxwidth=600&photo_reference=$encodedReference&key=$encodedApiKey"
     }
 }
 

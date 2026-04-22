@@ -26,6 +26,7 @@ data class PlaceResultDto(
     val placeId: String? = null,
     @SerialName("opening_hours")
     val openingHours: OpeningHoursDto? = null,
+    val photos: List<PhotoDto> = emptyList(),
     val rating: Double? = null,
     val types: List<String> = emptyList(),
     @SerialName("user_ratings_total")
@@ -48,4 +49,14 @@ data class LocationDto(
 data class OpeningHoursDto(
     @SerialName("open_now")
     val openNow: Boolean? = null,
+)
+
+@Serializable
+data class PhotoDto(
+    val height: Int? = null,
+    @SerialName("html_attributions")
+    val htmlAttributions: List<String> = emptyList(),
+    @SerialName("photo_reference")
+    val photoReference: String? = null,
+    val width: Int? = null,
 )

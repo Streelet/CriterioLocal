@@ -99,6 +99,7 @@ class HomeViewModelTest {
                             userRatingsTotal = 10,
                             isOpenNow = true,
                             iconUrl = null,
+                            photoUrl = "https://example.com/photo/farmavital",
                         ),
                     ),
                 ),

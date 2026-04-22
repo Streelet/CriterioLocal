@@ -20,6 +20,7 @@ data class NearbyPlace(
     val userRatingsTotal: Int?,
     val isOpenNow: Boolean?,
     val iconUrl: String?,
+    val photoUrl: String?,
 )
 
 data class NearbyPlaceSearchResult(

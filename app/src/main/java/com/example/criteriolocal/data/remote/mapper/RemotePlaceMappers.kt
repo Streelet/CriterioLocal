@@ -4,7 +4,9 @@ import com.example.criteriolocal.data.remote.dto.NearbySearchResponseDto
 import com.example.criteriolocal.domain.model.NearbyPlace
 import com.example.criteriolocal.domain.model.NearbyPlaceSearchResult
 
-internal fun NearbySearchResponseDto.asDomain(): NearbyPlaceSearchResult {
+internal fun NearbySearchResponseDto.asDomain(
+    photoUrlBuilder: (String) -> String,
+): NearbyPlaceSearchResult {
     return NearbyPlaceSearchResult(
         status = status,
         nextPageToken = nextPageToken,
@@ -28,6 +30,7 @@ internal fun NearbySearchResponseDto.asDomain(): NearbyPlaceSearchResult {
                 userRatingsTotal = result.userRatingsTotal,
                 isOpenNow = result.openingHours?.openNow,
                 iconUrl = result.icon,
+                photoUrl = result.photos.firstOrNull()?.photoReference?.let(photoUrlBuilder),
             )
         },
     )

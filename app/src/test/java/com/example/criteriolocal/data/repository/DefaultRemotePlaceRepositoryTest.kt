@@ -4,6 +4,7 @@ import com.example.criteriolocal.data.remote.api.GooglePlacesApiService
 import com.example.criteriolocal.data.remote.dto.GeometryDto
 import com.example.criteriolocal.data.remote.dto.LocationDto
 import com.example.criteriolocal.data.remote.dto.NearbySearchResponseDto
+import com.example.criteriolocal.data.remote.dto.PhotoDto
 import com.example.criteriolocal.data.remote.dto.PlaceResultDto
 import com.example.criteriolocal.domain.model.NearbyPlaceSearchRequest
 import kotlinx.coroutines.test.runTest
@@ -26,6 +27,9 @@ class DefaultRemotePlaceRepositoryTest {
                                 lat = 14.7967479,
                                 lng = -89.5459980,
                             ),
+                        ),
+                        photos = listOf(
+                            PhotoDto(photoReference = "photo reference with spaces"),
                         ),
                         types = listOf("pharmacy", "store"),
                     ),
@@ -52,6 +56,8 @@ class DefaultRemotePlaceRepositoryTest {
         assertEquals("fake-key", fakeService.apiKey)
         assertEquals("OK", result.status)
         assertEquals("Farmacia Doctor Farma", result.places.first().name)
+        assertTrue(result.places.first().photoUrl!!.contains("maps/api/place/photo"))
+        assertTrue(result.places.first().photoUrl!!.contains("photo_reference=photo+reference+with+spaces"))
     }
 
     @Test(expected = IllegalArgumentException::class)
