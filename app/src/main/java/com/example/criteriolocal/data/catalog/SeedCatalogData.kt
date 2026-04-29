@@ -1,10 +1,9 @@
 package com.example.criteriolocal.data.catalog
 
+import com.example.criteriolocal.domain.catalog.AppCatalogs
 import com.example.criteriolocal.domain.model.Business
 import com.example.criteriolocal.domain.model.BusinessStatus
-import com.example.criteriolocal.domain.model.CatalogStatus
 import com.example.criteriolocal.domain.model.Category
-import com.example.criteriolocal.domain.model.Quality
 import com.example.criteriolocal.domain.model.User
 import com.example.criteriolocal.domain.model.UserStatus
 
@@ -18,18 +17,7 @@ object SeedCatalogData {
         Category(6, "Tienda local", "Comercios de conveniencia y productos del dia a dia."),
     )
 
-    val qualities = listOf(
-        Quality(1, "Atencion rapida", "El servicio se completo en poco tiempo.", null, CatalogStatus.ACTIVE),
-        Quality(2, "Trato amable", "La atencion fue cordial y respetuosa.", null, CatalogStatus.ACTIVE),
-        Quality(3, "Precio accesible", "El precio reportado fue percibido como competitivo.", null, CatalogStatus.ACTIVE),
-        Quality(4, "Higiene adecuada", "Las instalaciones o procesos mostraron limpieza adecuada.", null, CatalogStatus.ACTIVE),
-        Quality(5, "Buena explicacion del servicio", "Se explico claramente el producto o procedimiento.", null, CatalogStatus.ACTIVE),
-        Quality(6, "Puntualidad", "Se cumplio el tiempo prometido para la atencion o entrega.", null, CatalogStatus.ACTIVE),
-        Quality(7, "Variedad de productos", "Se observo surtido suficiente en el negocio.", 2, CatalogStatus.ACTIVE),
-        Quality(8, "Servicio confiable", "La experiencia transmitio confianza y seguridad.", null, CatalogStatus.ACTIVE),
-        Quality(9, "Diagnostico claro", "La explicacion clinica fue entendible y precisa.", 5, CatalogStatus.ACTIVE),
-        Quality(10, "Repuestos disponibles", "El negocio tuvo piezas o insumos necesarios al momento.", 4, CatalogStatus.ACTIVE),
-    )
+    val qualities = AppCatalogs.officialQualities
 
     val users = listOf(
         User(
