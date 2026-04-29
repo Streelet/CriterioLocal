@@ -11,6 +11,8 @@ import com.example.criteriolocal.data.repository.DefaultRemotePlaceRepository
 import com.example.criteriolocal.data.repository.DefaultQualityRepository
 import com.example.criteriolocal.data.repository.DefaultRatingRepository
 import com.example.criteriolocal.data.repository.DefaultUserRepository
+import com.example.criteriolocal.domain.management.BusinessCategoryManager
+import com.example.criteriolocal.domain.management.UserManager
 import com.example.criteriolocal.domain.repository.BootstrapRepository
 import com.example.criteriolocal.domain.repository.BusinessRepository
 import com.example.criteriolocal.domain.repository.CategoryRepository
@@ -27,6 +29,8 @@ interface AppContainer {
     val qualityRepository: QualityRepository
     val remotePlaceRepository: RemotePlaceRepository
     val ratingRepository: RatingRepository
+    val userManager: UserManager
+    val businessCategoryManager: BusinessCategoryManager
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -67,6 +71,17 @@ class DefaultAppContainer(context: Context) : AppContainer {
             ratingDao = database.ratingDao(),
             ratingQualityDao = database.ratingQualityDao(),
             evidenceDao = database.evidenceDao(),
+        )
+    }
+
+    override val userManager: UserManager by lazy {
+        UserManager(userRepository = userRepository)
+    }
+
+    override val businessCategoryManager: BusinessCategoryManager by lazy {
+        BusinessCategoryManager(
+            categoryRepository = categoryRepository,
+            businessRepository = businessRepository,
         )
     }
 

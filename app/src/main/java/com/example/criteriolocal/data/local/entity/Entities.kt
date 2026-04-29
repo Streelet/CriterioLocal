@@ -32,8 +32,8 @@ data class UserEntity(
 
 @Entity(tableName = "categories")
 data class CategoryEntity(
-    @PrimaryKey(autoGenerate = false)
-    val id: Long,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val name: String,
     val description: String,
 )

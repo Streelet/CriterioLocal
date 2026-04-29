@@ -65,6 +65,10 @@ class DefaultUserRepository(
         return userDao.getUserByEmail(email)?.asDomain()
     }
 
+    override suspend fun saveUser(user: com.example.criteriolocal.domain.model.User): Long {
+        return userDao.insert(user.asEntity())
+    }
+
     override suspend fun saveUsers(users: List<com.example.criteriolocal.domain.model.User>) {
         userDao.insertAll(users.map { it.asEntity() })
     }
@@ -79,6 +83,10 @@ class DefaultCategoryRepository(
 
     override suspend fun getCategory(categoryId: Long): com.example.criteriolocal.domain.model.Category? {
         return categoryDao.getById(categoryId)?.asDomain()
+    }
+
+    override suspend fun saveCategory(category: com.example.criteriolocal.domain.model.Category): Long {
+        return categoryDao.insert(category.asEntity())
     }
 
     override suspend fun saveCategories(categories: List<com.example.criteriolocal.domain.model.Category>) {
@@ -104,6 +112,10 @@ class DefaultBusinessRepository(
 
     override fun observeBusiness(businessId: Long): Flow<com.example.criteriolocal.domain.model.BusinessWithCategory?> {
         return businessDao.observeBusiness(businessId).map { it?.asDomain() }
+    }
+
+    override suspend fun saveBusiness(business: com.example.criteriolocal.domain.model.Business): Long {
+        return businessDao.insert(business.asEntity())
     }
 
     override suspend fun saveBusinesses(businesses: List<com.example.criteriolocal.domain.model.Business>) {

@@ -191,6 +191,12 @@ private class FakeCategoryRepository(
 
     override suspend fun getCategory(categoryId: Long): Category? = state.value.firstOrNull { it.id == categoryId }
 
+    override suspend fun saveCategory(category: Category): Long {
+        val saved = category.copy(id = category.id.takeIf { it > 0 } ?: ((state.value.maxOfOrNull { it.id } ?: 0) + 1))
+        state.value = state.value.filterNot { it.id == saved.id } + saved
+        return saved.id
+    }
+
     override suspend fun saveCategories(categories: List<Category>) {
         state.value = categories
     }
@@ -213,6 +219,16 @@ private class FakeBusinessRepository(
 
     override fun observeBusiness(businessId: Long): Flow<BusinessWithCategory?> {
         return flowOf(state.value.firstOrNull { it.business.id == businessId })
+    }
+
+    override suspend fun saveBusiness(business: Business): Long {
+        val savedId = business.id.takeIf { it > 0 } ?: ((state.value.maxOfOrNull { it.business.id } ?: 0) + 1)
+        val saved = business.copy(id = savedId)
+        state.value = state.value.filterNot { it.business.id == savedId } + BusinessWithCategory(
+            business = saved,
+            category = Category(saved.categoryId, "Categoria ${saved.categoryId}", "Categoria generada"),
+        )
+        return savedId
     }
 
     override suspend fun saveBusinesses(businesses: List<Business>) {
@@ -256,6 +272,12 @@ private class FakeUserRepository(
     }
 
     override suspend fun getUserByEmail(email: String): User? = state.value.firstOrNull { it.email == email }
+
+    override suspend fun saveUser(user: User): Long {
+        val saved = user.copy(id = user.id.takeIf { it > 0 } ?: ((state.value.maxOfOrNull { it.id } ?: 0) + 1))
+        state.value = state.value.filterNot { it.id == saved.id } + saved
+        return saved.id
+    }
 
     override suspend fun saveUsers(users: List<User>) {
         state.value = users
