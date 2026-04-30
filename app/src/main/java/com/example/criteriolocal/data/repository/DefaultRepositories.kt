@@ -152,6 +152,10 @@ class DefaultRatingRepository(
     private val ratingQualityDao: RatingQualityDao,
     private val evidenceDao: EvidenceDao,
 ) : RatingRepository {
+    override fun observeAllRatings(): Flow<List<com.example.criteriolocal.domain.model.RatingDetails>> {
+        return ratingDao.observeAllRatings().map { ratings -> ratings.map { it.asDomain() } }
+    }
+
     override fun observeRatingsByUser(userId: Long): Flow<List<com.example.criteriolocal.domain.model.RatingDetails>> {
         return ratingDao.observeRatingsByUser(userId).map { ratings -> ratings.map { it.asDomain() } }
     }
