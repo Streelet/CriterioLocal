@@ -116,6 +116,10 @@ interface RatingDao {
     suspend fun insert(rating: RatingEntity): Long
 
     @Transaction
+    @Query("SELECT * FROM ratings ORDER BY rated_on DESC")
+    fun observeAllRatings(): Flow<List<RatingWithDetailsEntity>>
+
+    @Transaction
     @Query("SELECT * FROM ratings WHERE user_id = :userId ORDER BY rated_on DESC")
     fun observeRatingsByUser(userId: Long): Flow<List<RatingWithDetailsEntity>>
 

@@ -55,6 +55,7 @@ interface RemotePlaceRepository {
 }
 
 interface RatingRepository {
+    fun observeAllRatings(): Flow<List<RatingDetails>>
     fun observeRatingsByUser(userId: Long): Flow<List<RatingDetails>>
     fun observeRatingsByBusiness(businessId: Long): Flow<List<RatingDetails>>
     fun observeRating(ratingId: Long): Flow<RatingDetails?>

@@ -296,6 +296,8 @@ private class FakeRatingRepository : RatingRepository {
     val savedQualityIds = mutableListOf<Long>()
     val savedEvidences = mutableListOf<Evidence>()
 
+    override fun observeAllRatings(): Flow<List<RatingDetails>> = flowOf(emptyList())
+
     override fun observeRatingsByUser(userId: Long): Flow<List<RatingDetails>> = flowOf(emptyList())
 
     override fun observeRatingsByBusiness(businessId: Long): Flow<List<RatingDetails>> = flowOf(emptyList())
