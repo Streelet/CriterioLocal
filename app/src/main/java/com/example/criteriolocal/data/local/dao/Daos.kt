@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(user: UserEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(users: List<UserEntity>)
 
     @Query("SELECT * FROM users ORDER BY name ASC")
@@ -42,6 +45,9 @@ interface UserDao {
 @Dao
 interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(category: CategoryEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(categories: List<CategoryEntity>)
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
@@ -56,6 +62,9 @@ interface CategoryDao {
 
 @Dao
 interface BusinessDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(business: BusinessEntity): Long
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(businesses: List<BusinessEntity>)
 
@@ -74,6 +83,9 @@ interface BusinessDao {
     @Transaction
     @Query("SELECT * FROM businesses WHERE id = :businessId LIMIT 1")
     fun observeBusiness(businessId: Long): Flow<BusinessWithCategoryEntity?>
+
+    @Query("SELECT * FROM businesses WHERE google_place_id = :googlePlaceId LIMIT 1")
+    suspend fun getByGooglePlaceId(googlePlaceId: String): BusinessEntity?
 
     @Query("SELECT COUNT(*) FROM businesses")
     suspend fun count(): Int

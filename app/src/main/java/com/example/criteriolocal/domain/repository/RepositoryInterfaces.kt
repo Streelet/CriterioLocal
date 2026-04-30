@@ -23,12 +23,14 @@ interface UserRepository {
     fun observeUser(userId: Long): Flow<User?>
     fun observeUserWithRatings(userId: Long): Flow<UserWithRatings?>
     suspend fun getUserByEmail(email: String): User?
+    suspend fun saveUser(user: User): Long
     suspend fun saveUsers(users: List<User>)
 }
 
 interface CategoryRepository {
     fun observeCategories(): Flow<List<Category>>
     suspend fun getCategory(categoryId: Long): Category?
+    suspend fun saveCategory(category: Category): Long
     suspend fun saveCategories(categories: List<Category>)
 }
 
@@ -37,6 +39,8 @@ interface BusinessRepository {
     fun observeBusinessesByCategory(categoryId: Long): Flow<List<BusinessWithCategory>>
     fun searchBusinesses(query: String): Flow<List<BusinessWithCategory>>
     fun observeBusiness(businessId: Long): Flow<BusinessWithCategory?>
+    suspend fun getBusinessByGooglePlaceId(googlePlaceId: String): Business?
+    suspend fun saveBusiness(business: Business): Long
     suspend fun saveBusinesses(businesses: List<Business>)
 }
 
