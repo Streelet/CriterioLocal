@@ -147,6 +147,7 @@ class DefaultQualityRepository(
 }
 
 class DefaultRatingRepository(
+    private val database: CriterioLocalDatabase,
     private val ratingDao: RatingDao,
     private val ratingQualityDao: RatingQualityDao,
     private val evidenceDao: EvidenceDao,
@@ -161,6 +162,32 @@ class DefaultRatingRepository(
 
     override fun observeRating(ratingId: Long): Flow<com.example.criteriolocal.domain.model.RatingDetails?> {
         return ratingDao.observeRating(ratingId).map { it?.asDomain() }
+    }
+
+    override suspend fun saveStructuredRating(
+        rating: com.example.criteriolocal.domain.model.Rating,
+        selectedQualityIds: List<Long>,
+        evidences: List<com.example.criteriolocal.domain.model.Evidence>,
+    ): Long {
+        return database.withTransaction {
+            val ratingId = ratingDao.insert(rating.asEntity())
+            ratingQualityDao.insertAll(
+                selectedQualityIds.distinct().map { qualityId ->
+                    com.example.criteriolocal.domain.model.RatingQuality(
+                        ratingId = ratingId,
+                        qualityId = qualityId,
+                    ).asEntity()
+                },
+            )
+            if (evidences.isNotEmpty()) {
+                evidenceDao.insertAll(
+                    evidences.map { evidence ->
+                        evidence.copy(ratingId = ratingId).asEntity()
+                    },
+                )
+            }
+            ratingId
+        }
     }
 
     override suspend fun saveRating(rating: com.example.criteriolocal.domain.model.Rating): Long {
