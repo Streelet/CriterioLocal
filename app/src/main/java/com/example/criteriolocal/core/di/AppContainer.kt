@@ -12,6 +12,7 @@ import com.example.criteriolocal.data.repository.DefaultQualityRepository
 import com.example.criteriolocal.data.repository.DefaultRatingRepository
 import com.example.criteriolocal.data.repository.DefaultUserRepository
 import com.example.criteriolocal.domain.management.BusinessCategoryManager
+import com.example.criteriolocal.domain.management.RatingRegistrationManager
 import com.example.criteriolocal.domain.management.UserManager
 import com.example.criteriolocal.domain.repository.BootstrapRepository
 import com.example.criteriolocal.domain.repository.BusinessRepository
@@ -31,6 +32,7 @@ interface AppContainer {
     val ratingRepository: RatingRepository
     val userManager: UserManager
     val businessCategoryManager: BusinessCategoryManager
+    val ratingRegistrationManager: RatingRegistrationManager
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -68,6 +70,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val ratingRepository: RatingRepository by lazy {
         DefaultRatingRepository(
+            database = database,
             ratingDao = database.ratingDao(),
             ratingQualityDao = database.ratingQualityDao(),
             evidenceDao = database.evidenceDao(),
@@ -82,6 +85,15 @@ class DefaultAppContainer(context: Context) : AppContainer {
         BusinessCategoryManager(
             categoryRepository = categoryRepository,
             businessRepository = businessRepository,
+        )
+    }
+
+    override val ratingRegistrationManager: RatingRegistrationManager by lazy {
+        RatingRegistrationManager(
+            userRepository = userRepository,
+            businessRepository = businessRepository,
+            qualityRepository = qualityRepository,
+            ratingRepository = ratingRepository,
         )
     }
 

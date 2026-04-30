@@ -58,6 +58,11 @@ interface RatingRepository {
     fun observeRatingsByUser(userId: Long): Flow<List<RatingDetails>>
     fun observeRatingsByBusiness(businessId: Long): Flow<List<RatingDetails>>
     fun observeRating(ratingId: Long): Flow<RatingDetails?>
+    suspend fun saveStructuredRating(
+        rating: Rating,
+        selectedQualityIds: List<Long>,
+        evidences: List<Evidence>,
+    ): Long
     suspend fun saveRating(rating: Rating): Long
     suspend fun saveRatingQualities(items: List<RatingQuality>)
     suspend fun saveEvidence(items: List<Evidence>)

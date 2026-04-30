@@ -2,6 +2,7 @@ package com.example.criteriolocal.domain.validation
 
 import com.example.criteriolocal.domain.catalog.AppCatalogs
 import com.example.criteriolocal.domain.model.AvailabilityOption
+import com.example.criteriolocal.domain.model.EvidenceType
 import com.example.criteriolocal.domain.model.Quality
 import com.example.criteriolocal.domain.model.ServiceModeOption
 import com.example.criteriolocal.domain.model.UsageFrequencyOption
@@ -50,6 +51,12 @@ data class ValidationError(
     val message: String,
 )
 
+data class EvidenceValidationRequest(
+    val filePath: String?,
+    val fileType: EvidenceType?,
+    val uploadedOn: String?,
+)
+
 enum class ValidationErrorCode {
     FREE_TEXT_NOT_ALLOWED,
     USER_REQUIRED,
@@ -78,4 +85,8 @@ enum class ValidationErrorCode {
     QUALITY_NOT_IN_CATALOG,
     QUALITY_INACTIVE,
     QUALITY_NOT_APPLICABLE_TO_BUSINESS_CATEGORY,
+    EVIDENCE_FILE_PATH_REQUIRED,
+    EVIDENCE_FILE_TYPE_REQUIRED,
+    EVIDENCE_UPLOAD_DATE_REQUIRED,
+    EVIDENCE_UPLOAD_DATE_INVALID,
 }
