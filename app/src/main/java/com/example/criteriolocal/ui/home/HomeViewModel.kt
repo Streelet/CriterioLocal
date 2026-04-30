@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.criteriolocal.core.di.AppContainer
+import com.example.criteriolocal.domain.management.BusinessCategoryManager
 import com.example.criteriolocal.domain.model.NearbyPlace
 import com.example.criteriolocal.domain.model.NearbyPlaceSearchRequest
 import com.example.criteriolocal.domain.repository.BootstrapRepository
@@ -27,6 +28,7 @@ class HomeViewModel(
     qualityRepository: QualityRepository,
     userRepository: UserRepository,
     private val remotePlaceRepository: RemotePlaceRepository,
+    private val businessCategoryManager: BusinessCategoryManager,
 ) : ViewModel() {
 
     private val isLoading = MutableStateFlow(true)
@@ -110,6 +112,7 @@ class HomeViewModel(
             remotePlaces.value = result.places
             remotePlacesStatus.value = result.status
             remotePlacesError.value = null
+            businessCategoryManager.linkGooglePlacesAutomatically(result.places)
         }.onFailure { throwable ->
             remotePlaces.value = emptyList()
             remotePlacesStatus.value = null
@@ -140,6 +143,7 @@ class HomeViewModel(
                             qualityRepository = appContainer.qualityRepository,
                             userRepository = appContainer.userRepository,
                             remotePlaceRepository = appContainer.remotePlaceRepository,
+                            businessCategoryManager = appContainer.businessCategoryManager,
                         ) as T
                     }
                     throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

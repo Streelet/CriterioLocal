@@ -4,6 +4,7 @@ import com.example.criteriolocal.domain.model.Business
 import com.example.criteriolocal.domain.model.BusinessStatus
 import com.example.criteriolocal.domain.model.BusinessWithCategory
 import com.example.criteriolocal.domain.model.Category
+import com.example.criteriolocal.domain.model.NearbyPlace
 import com.example.criteriolocal.domain.repository.BusinessRepository
 import com.example.criteriolocal.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -18,47 +19,46 @@ import org.junit.Test
 
 class BusinessCategoryManagerTest {
     @Test
-    fun registerCategory_savesCategoryAndRejectsDuplicateName() = runTest {
-        val categoryRepository = FakeCategoryRepository()
+    fun linkGooglePlaceAutomatically_rejectsDuplicatedCategoryCatalog() = runTest {
+        val categoryRepository = FakeCategoryRepository(
+            initialCategories = listOf(
+                Category(2, "Farmacia", "Servicios farmaceuticos"),
+                Category(9, "farmacia", "Categoria duplicada"),
+            ),
+        )
         val manager = BusinessCategoryManager(
             categoryRepository = categoryRepository,
             businessRepository = FakeBusinessRepository(categoryRepository),
         )
 
-        val created = manager.registerCategory(
-            CreateCategoryRequest(
-                name = " Farmacia ",
-                description = "Servicios farmaceuticos",
-            ),
-        )
-        val duplicated = manager.registerCategory(
-            CreateCategoryRequest(
-                name = "farmacia",
-                description = "Duplicada",
+        val result = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(
+                    googlePlaceId = "ChIJZ0VERwAxYo8RBdXP_OtR3vY",
+                    name = "Farmacia Bienestar",
+                    types = listOf("pharmacy", "store"),
+                ),
             ),
         )
 
-        assertTrue(created.isSuccess)
-        assertEquals(1L, created.value?.id)
-        assertEquals("Farmacia", created.value?.name)
-        assertFalse(duplicated.isSuccess)
-        assertEquals(ManagementErrorCode.CATEGORY_ALREADY_EXISTS, duplicated.errors.single().code)
+        assertFalse(result.isSuccess)
+        assertEquals(ManagementErrorCode.CATEGORY_ALREADY_EXISTS, result.errors.single().code)
     }
 
     @Test
-    fun registerBusiness_requiresExistingCategory() = runTest {
+    fun linkGooglePlaceAutomatically_requiresLocalCategoryCatalog() = runTest {
         val categoryRepository = FakeCategoryRepository()
         val manager = BusinessCategoryManager(
             categoryRepository = categoryRepository,
             businessRepository = FakeBusinessRepository(categoryRepository),
         )
 
-        val result = manager.registerBusiness(
-            CreateBusinessRequest(
-                name = "Farmacia Central",
-                description = "Venta de medicamentos",
-                address = "4a Calle, Chiquimula",
-                categoryId = 99,
+        val result = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(
+                    googlePlaceId = "ChIJ7fWfyIYxYo8R9Gy1r1pI_eI",
+                    name = "Farmacia Central",
+                ),
             ),
         )
 
@@ -67,7 +67,7 @@ class BusinessCategoryManagerTest {
     }
 
     @Test
-    fun registerBusiness_savesBusinessWithCategoryAssociation() = runTest {
+    fun linkGooglePlaceAutomatically_resolvesPharmacyCategoryAndSavesBusiness() = runTest {
         val categoryRepository = FakeCategoryRepository(
             initialCategories = listOf(Category(5, "Farmacia", "Servicios farmaceuticos")),
         )
@@ -77,16 +77,17 @@ class BusinessCategoryManagerTest {
             businessRepository = businessRepository,
         )
 
-        val result = manager.registerBusiness(
-            CreateBusinessRequest(
-                name = "Farmacia Bienestar",
-                description = "Farmacia local",
-                address = "9a Avenida 5-20, Chiquimula",
-                phone = "+502 5555 0000",
-                categoryId = 5,
-                googlePlaceId = "ChIJZ0VERwAxYo8RBdXP_OtR3vY",
-                latitude = 14.7976531,
-                longitude = -89.543457,
+        val result = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(
+                    googlePlaceId = "ChIJZ0VERwAxYo8RBdXP_OtR3vY",
+                    name = "Farmacia Bienestar",
+                    address = "9a Avenida 5-20, Chiquimula",
+                    phone = "+502 5555 0000",
+                    latitude = 14.7976531,
+                    longitude = -89.543457,
+                    types = listOf("pharmacy", "store", "health"),
+                ),
             ),
         )
 
@@ -95,8 +96,90 @@ class BusinessCategoryManagerTest {
         assertTrue(result.isSuccess)
         assertEquals(1L, result.value?.id)
         assertEquals(5L, result.value?.categoryId)
+        assertEquals("ChIJZ0VERwAxYo8RBdXP_OtR3vY", result.value?.googlePlaceId)
+        assertTrue(result.value?.description?.contains("Google Places") == true)
         assertEquals(BusinessStatus.ACTIVE, result.value?.status)
         assertEquals("Farmacia", savedBusiness?.category?.name)
+    }
+
+    @Test
+    fun linkGooglePlaceAutomatically_updatesExistingGoogleBusinessInsteadOfDuplicating() = runTest {
+        val categoryRepository = FakeCategoryRepository(
+            initialCategories = listOf(
+                Category(2, "Farmacia", "Servicios farmaceuticos"),
+            ),
+        )
+        val businessRepository = FakeBusinessRepository(categoryRepository)
+        val manager = BusinessCategoryManager(categoryRepository, businessRepository)
+        val googlePlaceId = "ChIJ0XRw33kxYo8RIPRdpHlvbFQ"
+
+        val firstLink = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(googlePlaceId = googlePlaceId, name = "Farmacia Doctor Farma"),
+            ),
+        )
+        val secondLink = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(googlePlaceId = googlePlaceId, name = "Farmacia Doctor Farma"),
+            ),
+        )
+
+        assertTrue(firstLink.isSuccess)
+        assertTrue(secondLink.isSuccess)
+        assertEquals(firstLink.value?.id, secondLink.value?.id)
+        assertEquals(2L, secondLink.value?.categoryId)
+        assertEquals(1, businessRepository.observeBusinesses().first().size)
+    }
+
+    @Test
+    fun linkGooglePlaceAutomatically_prioritizesMedicalCategoryOverPharmacyForHospitalPlace() = runTest {
+        val categoryRepository = FakeCategoryRepository(
+            initialCategories = listOf(
+                Category(2, "Farmacia", "Servicios farmaceuticos"),
+                Category(5, "Clinica medica", "Atencion medica"),
+            ),
+        )
+        val manager = BusinessCategoryManager(
+            categoryRepository = categoryRepository,
+            businessRepository = FakeBusinessRepository(categoryRepository),
+        )
+
+        val result = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(
+                    googlePlaceId = "ChIJEZquc28xYo8RQT7eAI8K1XU",
+                    name = "Portal America",
+                    types = listOf("hospital", "doctor", "pharmacy", "store", "health"),
+                ),
+            ),
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals(5L, result.value?.categoryId)
+    }
+
+    @Test
+    fun linkGooglePlaceAutomatically_usesLocalStoreFallbackForUnknownTypes() = runTest {
+        val categoryRepository = FakeCategoryRepository(
+            initialCategories = listOf(Category(6, "Tienda local", "Comercio local")),
+        )
+        val manager = BusinessCategoryManager(
+            categoryRepository = categoryRepository,
+            businessRepository = FakeBusinessRepository(categoryRepository),
+        )
+
+        val result = manager.linkGooglePlaceAutomatically(
+            LinkGooglePlaceAutomaticallyRequest(
+                place = googlePlace(
+                    googlePlaceId = "unknown-place",
+                    name = "Negocio sin tipo especifico",
+                    types = listOf("point_of_interest", "establishment"),
+                ),
+            ),
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals(6L, result.value?.categoryId)
     }
 
     @Test
@@ -171,6 +254,10 @@ private class FakeBusinessRepository(
         return flowOf(businesses.value.firstOrNull { it.business.id == businessId })
     }
 
+    override suspend fun getBusinessByGooglePlaceId(googlePlaceId: String): Business? {
+        return businesses.value.firstOrNull { it.business.googlePlaceId == googlePlaceId }?.business
+    }
+
     override suspend fun saveBusiness(business: Business): Long {
         val savedId = business.id.takeIf { it > 0 } ?: ((businesses.value.maxOfOrNull { it.business.id } ?: 0) + 1)
         val savedBusiness = business.copy(id = savedId)
@@ -189,4 +276,31 @@ private class FakeBusinessRepository(
             }
         }
     }
+}
+
+private fun googlePlace(
+    googlePlaceId: String,
+    name: String,
+    address: String? = "4a Calle, Chiquimula",
+    phone: String? = null,
+    latitude: Double = 14.7906,
+    longitude: Double = -89.5447,
+    types: List<String> = listOf("pharmacy"),
+    businessStatus: String? = "OPERATIONAL",
+): NearbyPlace {
+    return NearbyPlace(
+        googlePlaceId = googlePlaceId,
+        name = name,
+        businessStatus = businessStatus,
+        latitude = latitude,
+        longitude = longitude,
+        address = address,
+        phone = phone,
+        types = types,
+        rating = null,
+        userRatingsTotal = null,
+        isOpenNow = null,
+        iconUrl = null,
+        photoUrl = null,
+    )
 }

@@ -39,6 +39,7 @@ interface BusinessRepository {
     fun observeBusinessesByCategory(categoryId: Long): Flow<List<BusinessWithCategory>>
     fun searchBusinesses(query: String): Flow<List<BusinessWithCategory>>
     fun observeBusiness(businessId: Long): Flow<BusinessWithCategory?>
+    suspend fun getBusinessByGooglePlaceId(googlePlaceId: String): Business?
     suspend fun saveBusiness(business: Business): Long
     suspend fun saveBusinesses(businesses: List<Business>)
 }

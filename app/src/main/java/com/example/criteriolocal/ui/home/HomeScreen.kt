@@ -45,7 +45,7 @@ fun HomeScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("CriterioLocal - Fase 1") },
+                title = { Text("CriterioLocal - Fase 3") },
             )
         },
     ) { innerPadding ->

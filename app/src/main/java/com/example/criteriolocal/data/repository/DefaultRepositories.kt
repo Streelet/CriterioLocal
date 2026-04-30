@@ -114,6 +114,12 @@ class DefaultBusinessRepository(
         return businessDao.observeBusiness(businessId).map { it?.asDomain() }
     }
 
+    override suspend fun getBusinessByGooglePlaceId(
+        googlePlaceId: String,
+    ): com.example.criteriolocal.domain.model.Business? {
+        return businessDao.getByGooglePlaceId(googlePlaceId)?.asDomain()
+    }
+
     override suspend fun saveBusiness(business: com.example.criteriolocal.domain.model.Business): Long {
         return businessDao.insert(business.asEntity())
     }

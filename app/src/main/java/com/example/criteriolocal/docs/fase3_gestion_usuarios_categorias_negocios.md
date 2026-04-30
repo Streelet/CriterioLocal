@@ -2,7 +2,7 @@
 
 ## 1. Resumen de la fase
 
-Esta fase implementa la base operativa del sistema para registrar usuarios, autenticar usuarios, consultar perfil basico, registrar categorias, registrar negocios y consultar negocios por listado, categoria, busqueda por nombre y detalle.
+Esta fase implementa la base operativa del sistema para registrar usuarios, autenticar usuarios, consultar perfil basico, mantener categorias base, vincular automaticamente negocios obtenidos desde Google Places y consultar negocios por listado, categoria, busqueda por nombre y detalle.
 
 La implementacion mantiene el alcance cerrado de la fase:
 
@@ -25,16 +25,33 @@ La implementacion mantiene el alcance cerrado de la fase:
 
 ### Categorias
 
-- `BusinessCategoryManager.registerCategory` permite crear categorias.
-- Rechaza nombre vacio.
-- Rechaza categorias duplicadas por nombre sin distinguir mayusculas/minusculas.
-- La persistencia local permite IDs autogenerados.
+- Las categorias funcionan como catalogo oficial interno del sistema.
+- No existe flujo de creacion de categorias desde la app cliente.
+- El manager valida que el catalogo local no tenga nombres vacios.
+- El manager valida que el catalogo local no tenga categorias duplicadas por nombre sin distinguir mayusculas/minusculas.
+- Las categorias se usan para clasificar automaticamente negocios de Google Places.
 
 ### Negocios
 
-- `BusinessCategoryManager.registerBusiness` permite crear negocios asociados a una categoria existente.
-- Valida nombre, direccion y categoria.
-- Guarda datos basicos del negocio: nombre, descripcion, direccion, telefono, Google Place ID y coordenadas cuando existan.
+- `BusinessCategoryManager.linkGooglePlaceAutomatically` permite vincular un negocio recibido desde Google Places con una categoria local sin pedir seleccion manual al usuario.
+- `BusinessCategoryManager.linkGooglePlacesAutomatically` procesa listas completas recibidas desde Nearby Search.
+- No se expone un flujo de creacion manual de negocios como fuente principal del sistema.
+- Valida Google Place ID y nombre del lugar.
+- Resuelve la categoria desde `types` de Google Places usando `GooglePlaceCategoryResolver`.
+- Usa `googlePlaceId` como identidad externa para evitar duplicar negocios de Google.
+- Si el negocio ya existe por `googlePlaceId`, se actualizan sus datos sin crear otro registro.
+- Guarda datos basicos recibidos de Google: nombre, direccion, telefono, Google Place ID, coordenadas, tipos y estado operativo.
+
+### Reglas de vinculacion automatica
+
+- `medical_lab` -> Laboratorio clinico.
+- `hospital`, `doctor`, `dentist`, `physiotherapist` -> Clinica medica.
+- `pharmacy`, `drugstore` -> Farmacia.
+- `health` -> Clinica medica cuando no exista una coincidencia mas especifica como `pharmacy`.
+- `restaurant`, `cafe`, `food`, `meal_delivery`, `meal_takeaway`, `bakery` -> Restaurante.
+- `car_repair`, `car_wash` -> Taller mecanico.
+- `store`, `convenience_store`, `supermarket`, `grocery_or_supermarket` -> Tienda local.
+- Si Google devuelve tipos genericos sin coincidencia, se usa `Tienda local` como categoria fallback si existe.
 - Deja disponible la consulta general, busqueda por nombre, filtro por categoria y detalle basico.
 
 ## 3. Archivos creados o modificados
@@ -100,7 +117,7 @@ La implementacion mantiene el alcance cerrado de la fase:
 - RF-02: inicio de sesion de usuarios registrados.
 - RF-03: perfil basico del usuario.
 - RF-04: estructura para historial de valoraciones del usuario.
-- RF-05: registro de negocios locales.
+- RF-05: almacenamiento local de negocios provenientes de Google Places.
 - RF-06: clasificacion de negocios por categorias.
 - RF-07: consulta de informacion general de negocio.
 - RF-08: consulta por nombre o categoria.
@@ -129,8 +146,11 @@ La implementacion mantiene el alcance cerrado de la fase:
 ### `BusinessCategoryManagerTest`
 
 - Verifica alta de categoria y rechazo de duplicados.
-- Verifica rechazo de negocio con categoria inexistente.
-- Verifica alta de negocio asociado a categoria.
+- Verifica rechazo cuando no existe catalogo local para clasificar negocios.
+- Verifica vinculacion automatica de farmacia desde `pharmacy`.
+- Verifica prioridad de categoria medica cuando Google devuelve `hospital`, `doctor` y `pharmacy` en el mismo lugar.
+- Verifica fallback a `Tienda local` para tipos genericos.
+- Verifica que un mismo `googlePlaceId` se actualiza sin duplicarse.
 - Verifica busqueda general cuando el texto de busqueda esta vacio.
 
 ## 7. Dependencias para la siguiente fase

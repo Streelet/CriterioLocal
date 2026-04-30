@@ -84,6 +84,9 @@ interface BusinessDao {
     @Query("SELECT * FROM businesses WHERE id = :businessId LIMIT 1")
     fun observeBusiness(businessId: Long): Flow<BusinessWithCategoryEntity?>
 
+    @Query("SELECT * FROM businesses WHERE google_place_id = :googlePlaceId LIMIT 1")
+    suspend fun getByGooglePlaceId(googlePlaceId: String): BusinessEntity?
+
     @Query("SELECT COUNT(*) FROM businesses")
     suspend fun count(): Int
 }

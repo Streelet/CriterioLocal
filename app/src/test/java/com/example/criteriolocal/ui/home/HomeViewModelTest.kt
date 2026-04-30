@@ -1,5 +1,6 @@
 package com.example.criteriolocal.ui.home
 
+import com.example.criteriolocal.domain.management.BusinessCategoryManager
 import com.example.criteriolocal.domain.model.Business
 import com.example.criteriolocal.domain.model.BusinessStatus
 import com.example.criteriolocal.domain.model.BusinessWithCategory
@@ -43,27 +44,30 @@ class HomeViewModelTest {
     fun init_loadsLocalState_andRemotePlaces() = runTest {
         val bootstrapRepository = FakeBootstrapRepository()
         val category = Category(2, "Farmacia", "Servicios farmaceuticos")
-        val viewModel = HomeViewModel(
-            bootstrapRepository = bootstrapRepository,
-            categoryRepository = FakeCategoryRepository(listOf(category)),
-            businessRepository = FakeBusinessRepository(
-                listOf(
-                    BusinessWithCategory(
-                        business = Business(
-                            id = 1,
-                            name = "Farmacia Local",
-                            description = "Negocio local base",
-                            address = "8a Calle 3-18, Chiquimula",
-                            phone = "5550-0102",
-                            latitude = 14.7967,
-                            longitude = -89.5460,
-                            categoryId = 2,
-                            status = BusinessStatus.ACTIVE,
-                        ),
-                        category = category,
+        val categoryRepository = FakeCategoryRepository(listOf(category))
+        val businessRepository = FakeBusinessRepository(
+            items = listOf(
+                BusinessWithCategory(
+                    business = Business(
+                        id = 1,
+                        name = "Farmacia Local",
+                        description = "Negocio local base",
+                        address = "8a Calle 3-18, Chiquimula",
+                        phone = "5550-0102",
+                        latitude = 14.7967,
+                        longitude = -89.5460,
+                        categoryId = 2,
+                        status = BusinessStatus.ACTIVE,
                     ),
+                    category = category,
                 ),
             ),
+            categoryRepository = categoryRepository,
+        )
+        val viewModel = HomeViewModel(
+            bootstrapRepository = bootstrapRepository,
+            categoryRepository = categoryRepository,
+            businessRepository = businessRepository,
             qualityRepository = FakeQualityRepository(
                 listOf(
                     Quality(1, "Atencion rapida", "Atencion en poco tiempo", null, CatalogStatus.ACTIVE),
@@ -104,6 +108,7 @@ class HomeViewModelTest {
                     ),
                 ),
             ),
+            businessCategoryManager = BusinessCategoryManager(categoryRepository, businessRepository),
         )
 
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -117,11 +122,12 @@ class HomeViewModelTest {
         assertTrue(bootstrapRepository.wasCalled)
         assertFalse(state.isLoading)
         assertEquals(1, state.categories.size)
-        assertEquals(1, state.businesses.size)
+        assertEquals(2, state.businesses.size)
         assertEquals(1, state.remotePlaces.size)
         assertEquals("OK", state.remotePlacesStatus)
         assertNull(state.remotePlacesError)
         assertEquals("Farmavital L&N", state.remotePlaces.first().name)
+        assertTrue(state.businesses.any { it.business.googlePlaceId == "ChIJ7fWfyIYxYo8R9Gy1r1pI_eI" })
 
         collector.cancel()
     }
@@ -129,32 +135,36 @@ class HomeViewModelTest {
     @Test
     fun init_keepsLocalBusinesses_whenRemoteApiFails() = runTest {
         val category = Category(2, "Farmacia", "Servicios farmaceuticos")
-        val viewModel = HomeViewModel(
-            bootstrapRepository = FakeBootstrapRepository(),
-            categoryRepository = FakeCategoryRepository(listOf(category)),
-            businessRepository = FakeBusinessRepository(
-                listOf(
-                    BusinessWithCategory(
-                        business = Business(
-                            id = 1,
-                            name = "Farmacia Local",
-                            description = "Negocio local base",
-                            address = "8a Calle 3-18, Chiquimula",
-                            phone = "5550-0102",
-                            latitude = 14.7967,
-                            longitude = -89.5460,
-                            categoryId = 2,
-                            status = BusinessStatus.ACTIVE,
-                        ),
-                        category = category,
+        val categoryRepository = FakeCategoryRepository(listOf(category))
+        val businessRepository = FakeBusinessRepository(
+            items = listOf(
+                BusinessWithCategory(
+                    business = Business(
+                        id = 1,
+                        name = "Farmacia Local",
+                        description = "Negocio local base",
+                        address = "8a Calle 3-18, Chiquimula",
+                        phone = "5550-0102",
+                        latitude = 14.7967,
+                        longitude = -89.5460,
+                        categoryId = 2,
+                        status = BusinessStatus.ACTIVE,
                     ),
+                    category = category,
                 ),
             ),
+            categoryRepository = categoryRepository,
+        )
+        val viewModel = HomeViewModel(
+            bootstrapRepository = FakeBootstrapRepository(),
+            categoryRepository = categoryRepository,
+            businessRepository = businessRepository,
             qualityRepository = FakeQualityRepository(emptyList()),
             userRepository = FakeUserRepository(emptyList()),
             remotePlaceRepository = FakeRemotePlaceRepository(
                 error = IllegalStateException("Fallo al consultar Google Places"),
             ),
+            businessCategoryManager = BusinessCategoryManager(categoryRepository, businessRepository),
         )
 
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -204,6 +214,7 @@ private class FakeCategoryRepository(
 
 private class FakeBusinessRepository(
     items: List<BusinessWithCategory>,
+    private val categoryRepository: FakeCategoryRepository,
 ) : BusinessRepository {
     private val state = MutableStateFlow(items)
 
@@ -221,12 +232,18 @@ private class FakeBusinessRepository(
         return flowOf(state.value.firstOrNull { it.business.id == businessId })
     }
 
+    override suspend fun getBusinessByGooglePlaceId(googlePlaceId: String): Business? {
+        return state.value.firstOrNull { it.business.googlePlaceId == googlePlaceId }?.business
+    }
+
     override suspend fun saveBusiness(business: Business): Long {
         val savedId = business.id.takeIf { it > 0 } ?: ((state.value.maxOfOrNull { it.business.id } ?: 0) + 1)
         val saved = business.copy(id = savedId)
+        val category = categoryRepository.getCategory(saved.categoryId)
+            ?: Category(saved.categoryId, "Categoria ${saved.categoryId}", "Categoria generada")
         state.value = state.value.filterNot { it.business.id == savedId } + BusinessWithCategory(
             business = saved,
-            category = Category(saved.categoryId, "Categoria ${saved.categoryId}", "Categoria generada"),
+            category = category,
         )
         return savedId
     }
