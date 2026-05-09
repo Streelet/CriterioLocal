@@ -4,8 +4,6 @@ import com.example.criteriolocal.domain.catalog.AppCatalogs
 import com.example.criteriolocal.domain.model.CatalogStatus
 
 object RatingValidator {
-    private val isoDatePattern = Regex("""^\d{4}-\d{2}-\d{2}$""")
-
     fun validate(
         request: RatingValidationRequest,
         context: RatingValidationContext,
@@ -129,7 +127,7 @@ object RatingValidator {
     ) {
         when {
             value.isNullOrBlank() -> errors += error(requiredCode, field, "La fecha es obligatoria.")
-            !value.matches(isoDatePattern) || !hasValidDateParts(value) -> {
+            !IsoDateValidator.isValid(value) -> {
                 errors += error(invalidCode, field, "La fecha debe usar formato YYYY-MM-DD.")
             }
         }
@@ -186,16 +184,6 @@ object RatingValidator {
                 }
             }
         }
-    }
-
-    private fun hasValidDateParts(value: String): Boolean {
-        val parts = value.split("-")
-        if (parts.size != 3) return false
-
-        val month = parts[1].toIntOrNull() ?: return false
-        val day = parts[2].toIntOrNull() ?: return false
-
-        return month in 1..12 && day in 1..31
     }
 
     private fun error(

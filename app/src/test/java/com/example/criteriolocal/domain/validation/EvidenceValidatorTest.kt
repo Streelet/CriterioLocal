@@ -80,6 +80,23 @@ class EvidenceValidatorTest {
     }
 
     @Test
+    fun validate_rejectsImpossibleCalendarDate() {
+        val result = EvidenceValidator.validate(
+            listOf(
+                EvidenceValidationRequest(
+                    filePath = "evidencias/factura-001.jpg",
+                    fileType = EvidenceType.IMAGE,
+                    fileSizeBytes = 100_000L,
+                    uploadedOn = "2026-02-31",
+                ),
+            ),
+        )
+
+        assertFalse(result.isValid)
+        assertTrue(result.hasError(ValidationErrorCode.EVIDENCE_UPLOAD_DATE_INVALID))
+    }
+
+    @Test
     fun validate_rejectsExtensionThatDoesNotMatchSelectedType() {
         val result = EvidenceValidator.validate(
             listOf(

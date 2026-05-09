@@ -33,25 +33,30 @@ class DefaultBootstrapRepository(
 ) : BootstrapRepository {
     override suspend fun seedBaseData() {
         database.withTransaction {
-            if (categoryDao.count() == 0) {
+            val shouldSeedCategories = categoryDao.count() == 0
+            val shouldSeedQualities = qualityDao.count() == 0
+            val shouldSeedUsers = userDao.count() == 0
+            val shouldSeedBusinesses = businessDao.count() == 0
+            val shouldSeedDemoRatings = ratingDao.count() == 0 &&
+                shouldSeedQualities &&
+                shouldSeedUsers &&
+                shouldSeedBusinesses
+
+            if (shouldSeedCategories) {
                 categoryDao.insertAll(SeedCatalogData.categories.map { it.asEntity() })
             }
-            if (qualityDao.count() == 0) {
+            if (shouldSeedQualities) {
                 qualityDao.insertAll(SeedCatalogData.qualities.map { it.asEntity() })
             }
-            if (userDao.count() == 0) {
+            if (shouldSeedUsers) {
                 userDao.insertAll(SeedCatalogData.users.map { it.asEntity() })
             }
-            if (businessDao.count() == 0) {
+            if (shouldSeedBusinesses) {
                 businessDao.insertAll(SeedCatalogData.businesses.map { it.asEntity() })
             }
-            if (ratingDao.count() == 0) {
+            if (shouldSeedDemoRatings) {
                 ratingDao.insertAll(SeedCatalogData.ratings.map { it.asEntity() })
-            }
-            if (ratingQualityDao.count() == 0) {
                 ratingQualityDao.insertAll(SeedCatalogData.ratingQualities.map { it.asEntity() })
-            }
-            if (evidenceDao.count() == 0) {
                 evidenceDao.insertAll(SeedCatalogData.evidences.map { it.asEntity() })
             }
         }

@@ -1,8 +1,6 @@
 package com.example.criteriolocal.domain.validation
 
 object EvidenceValidator {
-    private val isoDatePattern = Regex("""^\d{4}-\d{2}-\d{2}$""")
-
     fun validate(items: List<EvidenceValidationRequest>): ValidationResult {
         val errors = mutableListOf<ValidationError>()
 
@@ -84,7 +82,7 @@ object EvidenceValidator {
                 field = field,
                 message = "La evidencia debe incluir fecha de carga.",
             )
-            !value.matches(isoDatePattern) || !hasValidDateParts(value) -> {
+            !IsoDateValidator.isValid(value) -> {
                 errors += ValidationError(
                     code = ValidationErrorCode.EVIDENCE_UPLOAD_DATE_INVALID,
                     field = field,
@@ -92,15 +90,5 @@ object EvidenceValidator {
                 )
             }
         }
-    }
-
-    private fun hasValidDateParts(value: String): Boolean {
-        val parts = value.split("-")
-        if (parts.size != 3) return false
-
-        val month = parts[1].toIntOrNull() ?: return false
-        val day = parts[2].toIntOrNull() ?: return false
-
-        return month in 1..12 && day in 1..31
     }
 }
