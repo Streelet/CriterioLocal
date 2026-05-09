@@ -30,6 +30,8 @@ class ContractMappersTest {
         assertEquals((1..5).toList(), catalogs.ratingScale)
         assertEquals(listOf("Atencion rapida"), catalogs.qualities.map { it.name })
         assertTrue(catalogs.waitTimeOptions.any { it.code == WaitTimeOption.UP_TO_15_MINUTES.name })
+        assertEquals(5L * 1024L * 1024L, catalogs.evidenceFilePolicy.maxFileSizeBytes)
+        assertEquals(listOf("jpeg", "jpg", "png"), catalogs.evidenceFilePolicy.allowedExtensionsByType["IMAGE"])
         assertTrue(catalogs.ethicalNotice.contains("sin texto libre"))
     }
 
@@ -40,6 +42,7 @@ class ContractMappersTest {
         assertTrue(mapped.isSuccess)
         assertEquals(WaitTimeOption.UP_TO_15_MINUTES, mapped.value?.waitTime)
         assertEquals(EvidenceType.IMAGE, mapped.value?.evidences?.single()?.fileType)
+        assertEquals(100_000L, mapped.value?.evidences?.single()?.fileSizeBytes)
         assertNull(mapped.value?.freeTextComment)
     }
 
@@ -121,6 +124,7 @@ class ContractMappersTest {
                 EvidenceRequestDto(
                     filePath = "evidencias/factura.jpg",
                     fileTypeCode = "IMAGE",
+                    fileSizeBytes = 100_000L,
                     uploadedOn = "2026-05-08",
                 ),
             ),

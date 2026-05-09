@@ -29,6 +29,7 @@ data class RegisterStructuredRatingRequest(
 data class RegisterEvidenceRequest(
     val filePath: String?,
     val fileType: EvidenceType?,
+    val fileSizeBytes: Long?,
     val uploadedOn: String?,
 )
 

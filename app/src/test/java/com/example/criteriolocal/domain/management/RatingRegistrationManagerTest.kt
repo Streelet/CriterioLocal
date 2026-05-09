@@ -44,6 +44,7 @@ class RatingRegistrationManagerTest {
                     RegisterEvidenceRequest(
                         filePath = "evidencias/factura-001.jpg",
                         fileType = EvidenceType.IMAGE,
+                        fileSizeBytes = 250_000L,
                         uploadedOn = "2026-04-30",
                     ),
                 ),
@@ -126,6 +127,7 @@ class RatingRegistrationManagerTest {
                     RegisterEvidenceRequest(
                         filePath = "",
                         fileType = null,
+                        fileSizeBytes = 6L * 1024L * 1024L,
                         uploadedOn = "2026-14-99",
                     ),
                 ),
@@ -135,6 +137,7 @@ class RatingRegistrationManagerTest {
         assertFalse(result.isSuccess)
         assertTrue(result.errors.any { it.code == ValidationErrorCode.EVIDENCE_FILE_PATH_REQUIRED })
         assertTrue(result.errors.any { it.code == ValidationErrorCode.EVIDENCE_FILE_TYPE_REQUIRED })
+        assertTrue(result.errors.any { it.code == ValidationErrorCode.EVIDENCE_FILE_TOO_LARGE })
         assertTrue(result.errors.any { it.code == ValidationErrorCode.EVIDENCE_UPLOAD_DATE_INVALID })
         assertTrue(ratingRepository.savedRatings.isEmpty())
     }

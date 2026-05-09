@@ -49,7 +49,13 @@ data class RatingFormCatalogsDto(
     val qualities: List<QualityOptionDto>,
     val minReportedPrice: Double,
     val maxReportedPrice: Double,
+    val evidenceFilePolicy: EvidenceFilePolicyDto,
     val ethicalNotice: String,
+)
+
+data class EvidenceFilePolicyDto(
+    val maxFileSizeBytes: Long,
+    val allowedExtensionsByType: Map<String, List<String>>,
 )
 
 data class BusinessSearchFiltersDto(
@@ -141,6 +147,7 @@ data class RatingRegistrationRequestDto(
 data class EvidenceRequestDto(
     val filePath: String?,
     val fileTypeCode: String?,
+    val fileSizeBytes: Long?,
     val uploadedOn: String?,
 )
 

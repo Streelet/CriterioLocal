@@ -107,6 +107,7 @@ class RatingRegistrationManager(
         return EvidenceValidationRequest(
             filePath = filePath,
             fileType = fileType,
+            fileSizeBytes = fileSizeBytes,
             uploadedOn = uploadedOn,
         )
     }

@@ -65,6 +65,20 @@ class RatingValidatorTest {
     }
 
     @Test
+    fun validate_rejectsImpossibleCalendarDates() {
+        val result = RatingValidator.validate(
+            request = validRequest(
+                ratedOn = "2026-02-31",
+                priceReportedOn = "2026-04-31",
+            ),
+            context = validContext(),
+        )
+
+        assertTrue(result.hasError(ValidationErrorCode.RATED_DATE_INVALID))
+        assertTrue(result.hasError(ValidationErrorCode.PRICE_DATE_INVALID))
+    }
+
+    @Test
     fun validate_rejectsMissingUserAndBusinessRelations() {
         val result = RatingValidator.validate(
             request = validRequest(

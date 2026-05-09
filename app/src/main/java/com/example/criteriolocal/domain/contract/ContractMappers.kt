@@ -23,6 +23,7 @@ import com.example.criteriolocal.domain.query.BusinessDetail
 import com.example.criteriolocal.domain.query.BusinessSearchFilters
 import com.example.criteriolocal.domain.query.BusinessSearchItem
 import com.example.criteriolocal.domain.query.UserRatingHistory
+import com.example.criteriolocal.domain.validation.EvidenceFilePolicy
 import com.example.criteriolocal.domain.validation.ValidationError
 
 data class ContractMappingResult<T>(
@@ -53,6 +54,7 @@ fun List<Quality>.toRatingFormCatalogsDto(): RatingFormCatalogsDto {
         qualities = filter { it.status == CatalogStatus.ACTIVE }.map { it.toDto() },
         minReportedPrice = AppCatalogs.minReportedPrice,
         maxReportedPrice = AppCatalogs.maxReportedPrice,
+        evidenceFilePolicy = EvidenceFilePolicy.toDto(),
         ethicalNotice = AppCatalogs.ethicalNotice,
     )
 }
@@ -242,7 +244,16 @@ private fun EvidenceRequestDto.toDomainRequest(
     return RegisterEvidenceRequest(
         filePath = filePath,
         fileType = fileTypeCode.toEnumOrNull<EvidenceType>("evidences[$index].fileTypeCode", errors),
+        fileSizeBytes = fileSizeBytes,
         uploadedOn = uploadedOn,
+    )
+}
+
+private fun EvidenceFilePolicy.toDto(): EvidenceFilePolicyDto {
+    return EvidenceFilePolicyDto(
+        maxFileSizeBytes = maxFileSizeBytes,
+        allowedExtensionsByType = allowedExtensionsByType.mapKeys { it.key.name }
+            .mapValues { it.value.sorted() },
     )
 }
 

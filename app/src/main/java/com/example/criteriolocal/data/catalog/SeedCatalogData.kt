@@ -1,11 +1,19 @@
 package com.example.criteriolocal.data.catalog
 
 import com.example.criteriolocal.domain.catalog.AppCatalogs
+import com.example.criteriolocal.domain.model.AvailabilityOption
 import com.example.criteriolocal.domain.model.Business
 import com.example.criteriolocal.domain.model.BusinessStatus
 import com.example.criteriolocal.domain.model.Category
+import com.example.criteriolocal.domain.model.Evidence
+import com.example.criteriolocal.domain.model.EvidenceType
+import com.example.criteriolocal.domain.model.Rating
+import com.example.criteriolocal.domain.model.RatingQuality
+import com.example.criteriolocal.domain.model.ServiceModeOption
+import com.example.criteriolocal.domain.model.UsageFrequencyOption
 import com.example.criteriolocal.domain.model.User
 import com.example.criteriolocal.domain.model.UserStatus
+import com.example.criteriolocal.domain.model.WaitTimeOption
 
 object SeedCatalogData {
     val categories = listOf(
@@ -104,6 +112,95 @@ object SeedCatalogData {
             longitude = -89.5453,
             categoryId = 6,
             status = BusinessStatus.ACTIVE,
+        ),
+    )
+
+    val ratings = listOf(
+        Rating(
+            id = 1,
+            userId = 2,
+            businessId = 2,
+            ratedOn = "2026-04-30",
+            reportedPrice = 35.00,
+            priceReportedOn = "2026-04-30",
+            serviceScore = 5,
+            attentionScore = 4,
+            satisfactionScore = 5,
+            waitTime = WaitTimeOption.UP_TO_15_MINUTES,
+            wouldRecommend = true,
+            usageFrequency = UsageFrequencyOption.OCCASIONAL,
+            availability = AvailabilityOption.AVAILABLE,
+            serviceMode = ServiceModeOption.IN_PERSON,
+        ),
+        Rating(
+            id = 2,
+            userId = 1,
+            businessId = 2,
+            ratedOn = "2026-05-01",
+            reportedPrice = 42.50,
+            priceReportedOn = "2026-05-01",
+            serviceScore = 4,
+            attentionScore = 4,
+            satisfactionScore = 4,
+            waitTime = WaitTimeOption.FROM_15_TO_30_MINUTES,
+            wouldRecommend = true,
+            usageFrequency = UsageFrequencyOption.FREQUENT,
+            availability = AvailabilityOption.AVAILABLE,
+            serviceMode = ServiceModeOption.IN_PERSON,
+        ),
+        Rating(
+            id = 3,
+            userId = 2,
+            businessId = 3,
+            ratedOn = "2026-05-02",
+            reportedPrice = 68.00,
+            priceReportedOn = "2026-05-02",
+            serviceScore = 4,
+            attentionScore = 5,
+            satisfactionScore = 4,
+            waitTime = WaitTimeOption.FROM_15_TO_30_MINUTES,
+            wouldRecommend = true,
+            usageFrequency = UsageFrequencyOption.REGULAR,
+            availability = AvailabilityOption.LIMITED,
+            serviceMode = ServiceModeOption.IN_PERSON,
+        ),
+        Rating(
+            id = 4,
+            userId = 1,
+            businessId = 5,
+            ratedOn = "2026-05-03",
+            reportedPrice = 120.00,
+            priceReportedOn = "2026-05-03",
+            serviceScore = 5,
+            attentionScore = 5,
+            satisfactionScore = 5,
+            waitTime = WaitTimeOption.UP_TO_15_MINUTES,
+            wouldRecommend = true,
+            usageFrequency = UsageFrequencyOption.OCCASIONAL,
+            availability = AvailabilityOption.AVAILABLE,
+            serviceMode = ServiceModeOption.IN_PERSON,
+        ),
+    )
+
+    val ratingQualities = listOf(
+        RatingQuality(id = 1, ratingId = 1, qualityId = 1),
+        RatingQuality(id = 2, ratingId = 1, qualityId = 2),
+        RatingQuality(id = 3, ratingId = 1, qualityId = 7),
+        RatingQuality(id = 4, ratingId = 2, qualityId = 3),
+        RatingQuality(id = 5, ratingId = 2, qualityId = 8),
+        RatingQuality(id = 6, ratingId = 3, qualityId = 2),
+        RatingQuality(id = 7, ratingId = 3, qualityId = 4),
+        RatingQuality(id = 8, ratingId = 4, qualityId = 5),
+        RatingQuality(id = 9, ratingId = 4, qualityId = 9),
+    )
+
+    val evidences = listOf(
+        Evidence(
+            id = 1,
+            ratingId = 1,
+            filePath = "evidencias/demo/factura-farmacia-san-miguel.jpg",
+            fileType = EvidenceType.IMAGE,
+            uploadedOn = "2026-04-30",
         ),
     )
 }
