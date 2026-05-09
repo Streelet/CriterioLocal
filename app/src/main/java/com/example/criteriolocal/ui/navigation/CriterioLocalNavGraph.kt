@@ -5,14 +5,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.criteriolocal.core.di.AppContainer
 import com.example.criteriolocal.ui.auth.LoginScreen
 import com.example.criteriolocal.ui.auth.LoginViewModel
 import com.example.criteriolocal.ui.auth.RegisterScreen
 import com.example.criteriolocal.ui.auth.RegisterViewModel
+import com.example.criteriolocal.ui.business.BusinessDetailScreen
+import com.example.criteriolocal.ui.business.BusinessDetailViewModel
 import com.example.criteriolocal.ui.home.HomeScreen
 import com.example.criteriolocal.ui.home.HomeViewModel
 import com.example.criteriolocal.ui.profile.ProfileScreen
@@ -64,13 +68,33 @@ fun CriterioLocalNavGraph(
         }
 
         composable(Routes.Home) {
-            val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModel.factory(appContainer),
-            )
+            val homeViewModel: HomeViewModel = viewModel()
             val uiState by homeViewModel.uiState.collectAsState()
             HomeScreen(
                 uiState = uiState,
+                onQueryChange = homeViewModel::onQueryChange,
+                onClearQuery = homeViewModel::onClearQuery,
+                onCategorySelected = homeViewModel::onCategorySelected,
+                onOpenBusiness = { businessId ->
+                    navController.navigate(Routes.businessDetail(businessId))
+                },
                 onOpenProfile = { navController.navigate(Routes.Profile) },
+            )
+        }
+
+        composable(
+            route = Routes.BusinessDetailPattern,
+            arguments = listOf(
+                navArgument(Routes.BusinessIdArg) { type = NavType.LongType },
+            ),
+        ) {
+            val viewModel: BusinessDetailViewModel = viewModel(
+                factory = BusinessDetailViewModel.Factory,
+            )
+            val uiState by viewModel.uiState.collectAsState()
+            BusinessDetailScreen(
+                uiState = uiState,
+                onBack = { navController.popBackStack() },
             )
         }
 

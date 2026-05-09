@@ -1,210 +1,182 @@
 package com.example.criteriolocal.ui.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import com.example.criteriolocal.domain.model.Business
-import com.example.criteriolocal.domain.model.BusinessStatus
-import com.example.criteriolocal.domain.model.BusinessWithCategory
-import com.example.criteriolocal.domain.model.CatalogStatus
-import com.example.criteriolocal.domain.model.Category
-import com.example.criteriolocal.domain.model.NearbyPlace
-import com.example.criteriolocal.domain.model.Quality
+import com.example.criteriolocal.domain.contract.BusinessListItemDto
 import com.example.criteriolocal.ui.theme.CriterioLocalTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onOpenProfile: () -> Unit = {},
+    onQueryChange: (String) -> Unit,
+    onClearQuery: () -> Unit,
+    onCategorySelected: (Long?) -> Unit,
+    onOpenBusiness: (Long) -> Unit,
+    onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("CriterioLocal - Fase 3") },
+                title = {
+                    Text(
+                        text = "Explorar",
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                },
                 actions = {
                     IconButton(onClick = onOpenProfile) {
                         Icon(
                             imageVector = Icons.Outlined.AccountCircle,
-                            contentDescription = "Abrir perfil",
+                            contentDescription = "Perfil",
+                            tint = MaterialTheme.colorScheme.onBackground,
                         )
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                ),
             )
         },
     ) { innerPadding ->
-        if (uiState.isLoading) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            SearchBar(
+                query = uiState.query,
+                onQueryChange = onQueryChange,
+                onClearQuery = onClearQuery,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            )
+
+            CategoryFilterRow(
+                categories = uiState.categories,
+                selectedCategoryId = uiState.selectedCategoryId,
+                onCategorySelected = onCategorySelected,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            BusinessList(
+                items = uiState.visibleBusinesses,
+                onOpenBusiness = onOpenBusiness,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClearQuery: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 44.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(14.dp),
+    ) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.size(8.dp))
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center,
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterStart,
             ) {
-                CircularProgressIndicator()
+                if (query.isEmpty()) {
+                    Text(
+                        text = "Buscar negocios o categorias",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Search,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                item {
-                    SummaryCard(
-                        title = "Base estructural lista",
-                        lines = listOf(
-                            "Capas: core, data, domain y ui.",
-                            "Persistencia hibrida preparada: Room local + Google Places remoto.",
-                            "Entidades base: usuario, categoria, negocio, valoracion, cualidad, vinculo y evidencia.",
-                            "Catalogos cerrados y cliente HTTP listos para fases posteriores.",
-                            "API key remota inyectada desde variable de entorno en compilacion.",
-                        ),
-                    )
-                }
-
-                uiState.remotePlacesStatus?.let { status ->
-                    item {
-                        SummaryCard(
-                            title = "Estado de la API",
-                            lines = listOf("Nearby Search: $status"),
-                        )
-                    }
-                }
-
-                uiState.remotePlacesError?.let { message ->
-                    item {
-                        SummaryCard(
-                            title = "Estado de la API",
-                            lines = listOf(message),
-                        )
-                    }
-                }
-
-                uiState.errorMessage?.let { message ->
-                    item {
-                        SummaryCard(
-                            title = "Estado de inicializacion",
-                            lines = listOf(message),
-                        )
-                    }
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Aviso etico",
-                        lines = listOf(uiState.ethicalNotice),
-                    )
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Catalogos de valoracion",
-                        lines = listOf(
-                            "Escala numerica: ${uiState.ratingScale.joinToString()}",
-                            "Tiempo de espera: ${uiState.waitTimeOptions.joinToString { it.label }}",
-                            "Frecuencia de uso: ${uiState.usageFrequencyOptions.joinToString { it.label }}",
-                            "Disponibilidad: ${uiState.availabilityOptions.joinToString { it.label }}",
-                            "Tipo de atencion: ${uiState.serviceModeOptions.joinToString { it.label }}",
-                        ),
-                    )
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Categorias iniciales",
-                        lines = uiState.categories.map { "${it.id}. ${it.name}: ${it.description}" },
-                    )
-                }
-
-                item {
-                    SummaryCard(
-                        title = if (uiState.remotePlaces.isNotEmpty()) {
-                            "Negocios demo consumidos desde la API"
-                        } else {
-                            "Negocios demo locales"
-                        },
-                        lines = if (uiState.remotePlaces.isNotEmpty()) {
-                            listOf(
-                                "Se muestran los negocios remotos con imagen cuando Google Places devuelve fotos.",
-                            )
-                        } else {
-                            uiState.businesses.map {
-                                buildString {
-                                    append(it.business.name)
-                                    append(" - ")
-                                    append(it.category.name)
-                                    append(" - ")
-                                    append(it.business.address)
-                                    val coordinates = listOfNotNull(it.business.latitude, it.business.longitude)
-                                    if (coordinates.size == 2) {
-                                        append(" - ")
-                                        append("${coordinates[0]}, ${coordinates[1]}")
-                                    }
-                                }
-                            }
-                        },
-                    )
-                }
-
-                if (uiState.remotePlaces.isNotEmpty()) {
-                    items(uiState.remotePlaces, key = { it.googlePlaceId }) { place ->
-                        RemotePlaceCard(place = place)
-                    }
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Negocios locales base",
-                        lines = uiState.businesses.map {
-                            "${it.business.name} - ${it.category.name} - ${it.business.address}"
-                        },
-                    )
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Cualidades oficiales",
-                        lines = uiState.qualities.map { quality ->
-                            val applicability = quality.applicableCategoryId?.let { " - categoria $it" } ?: ""
-                            "${quality.name}$applicability"
-                        },
-                    )
-                }
-
-                item {
-                    SummaryCard(
-                        title = "Usuarios semilla",
-                        lines = uiState.users.map { "${it.name} - ${it.email}" },
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = onClearQuery,
+                    modifier = Modifier.size(28.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Limpiar busqueda",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }
@@ -213,153 +185,241 @@ fun HomeScreen(
 }
 
 @Composable
-private fun SummaryCard(
-    title: String,
-    lines: List<String>,
-    modifier: Modifier = Modifier,
+private fun CategoryFilterRow(
+    categories: List<CategoryFilterUi>,
+    selectedCategoryId: Long?,
+    onCategorySelected: (Long?) -> Unit,
 ) {
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(categories) { category ->
+            CategoryChip(
+                label = category.label,
+                isSelected = category.id == selectedCategoryId,
+                onClick = { onCategorySelected(category.id) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryChip(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    val backgroundColor = if (isSelected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val contentColor = if (isSelected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Surface(
+        color = backgroundColor,
+        shape = CircleShape,
+        modifier = Modifier
+            .heightIn(min = 36.dp)
+            .clickable(onClick = onClick),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BusinessList(
+    items: List<BusinessListItemDto>,
+    onOpenBusiness: (Long) -> Unit,
+) {
+    if (items.isEmpty()) {
+        EmptyState()
+        return
+    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(items, key = { it.business.id }) { item ->
+            BusinessCard(
+                item = item,
+                onClick = { onOpenBusiness(item.business.id) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun BusinessCard(
+    item: BusinessListItemDto,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(18.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = item.business.name,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = item.business.categoryName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                RatingBadge(
+                    averageScore = item.averageScore,
+                    totalRatings = item.totalRatings,
+                )
+                PriceTier(
+                    minPrice = item.minReportedPrice,
+                    maxPrice = item.maxReportedPrice,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RatingBadge(
+    averageScore: Double?,
+    totalRatings: Int,
+) {
+    androidx.compose.foundation.layout.Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(16.dp),
+        )
+        Text(
+            text = averageScore?.let { String.format("%.1f", it) } ?: "Sin valoraciones",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = "($totalRatings)",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun PriceTier(
+    minPrice: Double?,
+    maxPrice: Double?,
+) {
+    val tier = priceTierOf(maxPrice)
+    if (tier == 0) return
+    androidx.compose.foundation.layout.Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(4) { index ->
+            val isActive = index < tier
+            Text(
+                text = "$",
+                style = MaterialTheme.typography.labelLarge,
+                color = if (isActive) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+            )
+        }
+        if (minPrice != null && maxPrice != null) {
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Q${minPrice.toInt()}-${maxPrice.toInt()}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp, vertical = 64.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = title,
+                text = "Sin resultados",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
             )
-            lines.forEach { line ->
-                Text(
-                    text = line,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+            Text(
+                text = "Ajusta la busqueda o cambia de categoria.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
 
-@Composable
-private fun RemotePlaceCard(
-    place: NearbyPlace,
-    modifier: Modifier = Modifier,
-) {
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val imageUrl = place.photoUrl ?: place.iconUrl
-            if (imageUrl != null) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = place.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-
-            Text(
-                text = place.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-
-            place.address?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            Text(
-                text = "Coordenadas: ${place.latitude}, ${place.longitude}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-
-            val details = buildList {
-                place.rating?.let { add("Rating $it") }
-                place.userRatingsTotal?.let { add("Opiniones $it") }
-                place.phone?.takeIf { it.isNotBlank() }?.let { add(it) }
-                place.isOpenNow?.let { add(if (it) "Abierto ahora" else "Cerrado ahora") }
-            }
-            if (details.isNotEmpty()) {
-                Text(
-                    text = details.joinToString(" - "),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            place.photoUrl?.let {
-                Text(
-                    text = "Foto API: $it",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
+private fun priceTierOf(maxPrice: Double?): Int {
+    val price = maxPrice ?: return 0
+    return when {
+        price < 50 -> 1
+        price < 200 -> 2
+        price < 500 -> 3
+        else -> 4
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HomeScreenPreview() {
+    val viewModel = HomeViewModel()
     CriterioLocalTheme {
         HomeScreen(
-            uiState = HomeUiState(
-                isLoading = false,
-                categories = listOf(
-                    Category(1, "Laboratorio clinico", "Pruebas diagnosticas."),
-                    Category(2, "Farmacia", "Venta de medicamentos."),
-                ),
-                businesses = listOf(
-                    BusinessWithCategory(
-                        business = Business(
-                            id = 1,
-                            name = "Laboratorio Vida",
-                            description = "Atencion diagnostica.",
-                            address = "4a Avenida 12-45",
-                            phone = "5550-0101",
-                            latitude = 14.7924,
-                            longitude = -89.5450,
-                            categoryId = 1,
-                            status = BusinessStatus.ACTIVE,
-                        ),
-                        category = Category(1, "Laboratorio clinico", "Pruebas diagnosticas."),
-                    ),
-                ),
-                qualities = listOf(
-                    Quality(1, "Atencion rapida", "Atencion en poco tiempo.", null, CatalogStatus.ACTIVE),
-                    Quality(2, "Trato amable", "Atencion cordial.", null, CatalogStatus.ACTIVE),
-                ),
-                remotePlaces = listOf(
-                    NearbyPlace(
-                        googlePlaceId = "sample-place-id",
-                        name = "Farmacia Demo API",
-                        businessStatus = "OPERATIONAL",
-                        latitude = 14.7924897,
-                        longitude = -89.5450458,
-                        address = "4a Calle 1-70, Chiquimula",
-                        phone = "+502 3220 3463",
-                        types = listOf("pharmacy", "store"),
-                        rating = 4.8,
-                        userRatingsTotal = 24,
-                        isOpenNow = true,
-                        iconUrl = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/pharmacy-71.png",
-                        photoUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photo_reference=demo&key=demo",
-                    ),
-                ),
-                remotePlacesStatus = "OK",
-            ),
+            uiState = viewModel.uiState.value,
+            onQueryChange = {},
+            onClearQuery = {},
+            onCategorySelected = {},
+            onOpenBusiness = {},
+            onOpenProfile = {},
         )
     }
 }
