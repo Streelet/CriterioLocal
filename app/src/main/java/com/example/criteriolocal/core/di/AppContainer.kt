@@ -14,6 +14,7 @@ import com.example.criteriolocal.data.repository.DefaultUserRepository
 import com.example.criteriolocal.domain.management.BusinessCategoryManager
 import com.example.criteriolocal.domain.management.RatingRegistrationManager
 import com.example.criteriolocal.domain.management.UserManager
+import com.example.criteriolocal.domain.metrics.BusinessMetricsManager
 import com.example.criteriolocal.domain.query.BusinessQueryManager
 import com.example.criteriolocal.domain.repository.BootstrapRepository
 import com.example.criteriolocal.domain.repository.BusinessRepository
@@ -35,6 +36,7 @@ interface AppContainer {
     val businessCategoryManager: BusinessCategoryManager
     val ratingRegistrationManager: RatingRegistrationManager
     val businessQueryManager: BusinessQueryManager
+    val businessMetricsManager: BusinessMetricsManager
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -101,6 +103,13 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val businessQueryManager: BusinessQueryManager by lazy {
         BusinessQueryManager(
+            businessRepository = businessRepository,
+            ratingRepository = ratingRepository,
+        )
+    }
+
+    override val businessMetricsManager: BusinessMetricsManager by lazy {
+        BusinessMetricsManager(
             businessRepository = businessRepository,
             ratingRepository = ratingRepository,
         )
