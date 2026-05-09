@@ -115,6 +115,9 @@ interface RatingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(rating: RatingEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(ratings: List<RatingEntity>)
+
     @Transaction
     @Query("SELECT * FROM ratings ORDER BY rated_on DESC")
     fun observeAllRatings(): Flow<List<RatingWithDetailsEntity>>
@@ -130,16 +133,25 @@ interface RatingDao {
     @Transaction
     @Query("SELECT * FROM ratings WHERE id = :ratingId LIMIT 1")
     fun observeRating(ratingId: Long): Flow<RatingWithDetailsEntity?>
+
+    @Query("SELECT COUNT(*) FROM ratings")
+    suspend fun count(): Int
 }
 
 @Dao
 interface RatingQualityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<RatingQualityEntity>)
+
+    @Query("SELECT COUNT(*) FROM rating_qualities")
+    suspend fun count(): Int
 }
 
 @Dao
 interface EvidenceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(items: List<EvidenceEntity>)
+
+    @Query("SELECT COUNT(*) FROM evidences")
+    suspend fun count(): Int
 }

@@ -27,6 +27,9 @@ class DefaultBootstrapRepository(
     private val qualityDao: QualityDao,
     private val userDao: UserDao,
     private val businessDao: BusinessDao,
+    private val ratingDao: RatingDao,
+    private val ratingQualityDao: RatingQualityDao,
+    private val evidenceDao: EvidenceDao,
 ) : BootstrapRepository {
     override suspend fun seedBaseData() {
         database.withTransaction {
@@ -41,6 +44,15 @@ class DefaultBootstrapRepository(
             }
             if (businessDao.count() == 0) {
                 businessDao.insertAll(SeedCatalogData.businesses.map { it.asEntity() })
+            }
+            if (ratingDao.count() == 0) {
+                ratingDao.insertAll(SeedCatalogData.ratings.map { it.asEntity() })
+            }
+            if (ratingQualityDao.count() == 0) {
+                ratingQualityDao.insertAll(SeedCatalogData.ratingQualities.map { it.asEntity() })
+            }
+            if (evidenceDao.count() == 0) {
+                evidenceDao.insertAll(SeedCatalogData.evidences.map { it.asEntity() })
             }
         }
     }

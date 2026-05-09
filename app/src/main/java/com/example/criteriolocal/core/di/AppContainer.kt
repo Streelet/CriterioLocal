@@ -133,6 +133,9 @@ class DefaultAppContainer(context: Context) : AppContainer {
             qualityDao = database.qualityDao(),
             userDao = database.userDao(),
             businessDao = database.businessDao(),
+            ratingDao = database.ratingDao(),
+            ratingQualityDao = database.ratingQualityDao(),
+            evidenceDao = database.evidenceDao(),
         )
     }
 }

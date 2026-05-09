@@ -54,6 +54,7 @@ data class ValidationError(
 data class EvidenceValidationRequest(
     val filePath: String?,
     val fileType: EvidenceType?,
+    val fileSizeBytes: Long?,
     val uploadedOn: String?,
 )
 
@@ -87,6 +88,10 @@ enum class ValidationErrorCode {
     QUALITY_NOT_APPLICABLE_TO_BUSINESS_CATEGORY,
     EVIDENCE_FILE_PATH_REQUIRED,
     EVIDENCE_FILE_TYPE_REQUIRED,
+    EVIDENCE_FILE_SIZE_REQUIRED,
+    EVIDENCE_FILE_SIZE_INVALID,
+    EVIDENCE_FILE_TOO_LARGE,
+    EVIDENCE_FILE_EXTENSION_INVALID,
     EVIDENCE_UPLOAD_DATE_REQUIRED,
     EVIDENCE_UPLOAD_DATE_INVALID,
 }
