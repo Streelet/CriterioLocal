@@ -8,6 +8,9 @@ object Routes {
     const val BusinessDetail = "business_detail"
     const val BusinessIdArg = "businessId"
     const val BusinessDetailPattern = "$BusinessDetail/{$BusinessIdArg}"
+    const val RatingForm = "rating_form"
+    const val RatingFormPattern = "$RatingForm/{$BusinessIdArg}"
 
     fun businessDetail(businessId: Long): String = "$BusinessDetail/$businessId"
+    fun ratingForm(businessId: Long): String = "$RatingForm/$businessId"
 }

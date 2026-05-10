@@ -21,6 +21,8 @@ import com.example.criteriolocal.ui.home.HomeScreen
 import com.example.criteriolocal.ui.home.HomeViewModel
 import com.example.criteriolocal.ui.profile.ProfileScreen
 import com.example.criteriolocal.ui.profile.ProfileViewModel
+import com.example.criteriolocal.ui.rating.RatingFormScreen
+import com.example.criteriolocal.ui.rating.RatingFormViewModel
 
 @Composable
 fun CriterioLocalNavGraph(
@@ -87,12 +89,35 @@ fun CriterioLocalNavGraph(
             arguments = listOf(
                 navArgument(Routes.BusinessIdArg) { type = NavType.LongType },
             ),
-        ) {
+        ) { backStackEntry ->
+            val businessId = backStackEntry.arguments?.getLong(Routes.BusinessIdArg) ?: 0L
             val viewModel: BusinessDetailViewModel = viewModel(
-                factory = BusinessDetailViewModel.Factory,
+                key = "${Routes.BusinessDetail}-$businessId",
+                factory = BusinessDetailViewModel.factory(businessId),
             )
             val uiState by viewModel.uiState.collectAsState()
             BusinessDetailScreen(
+                uiState = uiState,
+                onBack = { navController.popBackStack() },
+                onEvaluate = { id ->
+                    navController.navigate(Routes.ratingForm(id))
+                },
+            )
+        }
+
+        composable(
+            route = Routes.RatingFormPattern,
+            arguments = listOf(
+                navArgument(Routes.BusinessIdArg) { type = NavType.LongType },
+            ),
+        ) { backStackEntry ->
+            val businessId = backStackEntry.arguments?.getLong(Routes.BusinessIdArg) ?: 0L
+            val viewModel: RatingFormViewModel = viewModel(
+                key = "${Routes.RatingForm}-$businessId",
+                factory = RatingFormViewModel.factory(businessId),
+            )
+            val uiState by viewModel.uiState.collectAsState()
+            RatingFormScreen(
                 uiState = uiState,
                 onBack = { navController.popBackStack() },
             )
