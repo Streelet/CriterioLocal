@@ -119,7 +119,22 @@ fun CriterioLocalNavGraph(
             val uiState by viewModel.uiState.collectAsState()
             RatingFormScreen(
                 uiState = uiState,
+                events = viewModel.events,
+                onServiceScoreChange = viewModel::onServiceScoreChange,
+                onAttentionScoreChange = viewModel::onAttentionScoreChange,
+                onSatisfactionScoreChange = viewModel::onSatisfactionScoreChange,
+                onPriceChange = viewModel::onPriceChange,
+                onPriceDateChange = viewModel::onPriceDateChange,
+                onWaitTimeSelected = viewModel::onWaitTimeSelected,
+                onUsageFrequencySelected = viewModel::onUsageFrequencySelected,
+                onAvailabilitySelected = viewModel::onAvailabilitySelected,
+                onRecommendationChange = viewModel::onRecommendationChange,
+                onQualityToggled = viewModel::onQualityToggled,
+                onAttachEvidence = viewModel::onAttachEvidence,
+                onRemoveEvidence = viewModel::onRemoveEvidence,
+                onSubmit = viewModel::onSubmit,
                 onBack = { navController.popBackStack() },
+                onSubmitted = { navController.popBackStack() },
             )
         }
 
