@@ -61,6 +61,17 @@ class DefaultBootstrapRepository(
             }
         }
     }
+
+    override suspend fun seedCatalogsOnly() {
+        database.withTransaction {
+            if (categoryDao.count() == 0) {
+                categoryDao.insertAll(SeedCatalogData.categories.map { it.asEntity() })
+            }
+            if (qualityDao.count() == 0) {
+                qualityDao.insertAll(SeedCatalogData.qualities.map { it.asEntity() })
+            }
+        }
+    }
 }
 
 class DefaultUserRepository(

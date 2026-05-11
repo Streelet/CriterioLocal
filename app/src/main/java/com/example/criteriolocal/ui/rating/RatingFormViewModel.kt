@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.criteriolocal.domain.contract.EvidenceRequestDto
+import com.example.criteriolocal.domain.contract.FrontendContractManager
+import com.example.criteriolocal.domain.contract.RatingRegistrationRequestDto
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,16 +16,44 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class RatingFormViewModel(
     private val businessId: Long,
+    private val frontendContractManager: FrontendContractManager,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(initialState(businessId))
+    private val _uiState = MutableStateFlow(RatingFormUiState(businessId = businessId))
     val uiState: StateFlow<RatingFormUiState> = _uiState.asStateFlow()
 
     private val _events = Channel<RatingFormEvent>(capacity = Channel.BUFFERED)
     val events: Flow<RatingFormEvent> = _events.receiveAsFlow()
+
+    init {
+        viewModelScope.launch {
+            frontendContractManager.observeRatingFormCatalogs().collect { catalogs ->
+                _uiState.update { state ->
+                    state.copy(
+                        waitTimeOptions = catalogs.waitTimeOptions.map {
+                            CatalogChoice(code = it.code, label = it.label)
+                        },
+                        usageFrequencyOptions = catalogs.usageFrequencyOptions.map {
+                            CatalogChoice(code = it.code, label = it.label)
+                        },
+                        availabilityOptions = catalogs.availabilityOptions.map {
+                            CatalogChoice(code = it.code, label = it.label)
+                        },
+                        qualityOptions = catalogs.qualities.map {
+                            QualityChoice(id = it.id, label = it.name)
+                        },
+                        ethicalNotice = catalogs.ethicalNotice,
+                    )
+                }
+            }
+        }
+    }
 
     fun onServiceScoreChange(value: Int) {
         _uiState.update { it.copy(serviceScore = value, errorMessage = null) }
@@ -93,15 +123,81 @@ class RatingFormViewModel(
         }
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
-            delay(SubmitDelayMillis)
-            _uiState.value = initialState(businessId)
-            _events.send(RatingFormEvent.SubmittedSuccessfully)
+            val today = isoFormatter().format(Date())
+            val priceDate = isoFormatter().format(Date(current.priceDateMillis))
+            val request = RatingRegistrationRequestDto(
+                userId = TempUserId,
+                businessId = current.businessId,
+                ratedOn = today,
+                reportedPrice = current.priceAsDouble,
+                priceReportedOn = priceDate,
+                serviceScore = current.serviceScore,
+                attentionScore = current.attentionScore,
+                satisfactionScore = current.satisfactionScore,
+                waitTimeCode = current.selectedWaitTime,
+                wouldRecommend = current.wouldRecommend,
+                usageFrequencyCode = current.selectedUsageFrequency,
+                availabilityCode = current.selectedAvailability,
+                serviceModeCode = DefaultServiceModeCode,
+                selectedQualityIds = current.selectedQualityIds.toList(),
+                evidences = current.evidence?.let {
+                    listOf(it.toRequestDto(uploadedOn = today))
+                } ?: emptyList(),
+            )
+
+            val result = frontendContractManager.registerStructuredRating(request)
+            if (result.isSuccess) {
+                _uiState.update {
+                    it.copy(
+                        serviceScore = 0,
+                        attentionScore = 0,
+                        satisfactionScore = 0,
+                        reportedPrice = "",
+                        priceDateMillis = System.currentTimeMillis(),
+                        selectedWaitTime = null,
+                        selectedUsageFrequency = null,
+                        selectedAvailability = null,
+                        wouldRecommend = null,
+                        selectedQualityIds = emptySet(),
+                        evidence = null,
+                        isSubmitting = false,
+                        errorMessage = null,
+                    )
+                }
+                _events.send(RatingFormEvent.SubmittedSuccessfully)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = result.errors.firstOrNull()?.message
+                            ?: "No se pudo enviar la valoracion.",
+                    )
+                }
+            }
         }
     }
 
+    private fun EvidenceAttachment.toRequestDto(uploadedOn: String): EvidenceRequestDto {
+        val typeCode = when {
+            mimeType.startsWith("image", ignoreCase = true) -> "IMAGE"
+            mimeType.equals("application/pdf", ignoreCase = true) -> "PDF"
+            else -> "IMAGE"
+        }
+        return EvidenceRequestDto(
+            filePath = fileName,
+            fileTypeCode = typeCode,
+            fileSizeBytes = sizeBytes,
+            uploadedOn = uploadedOn,
+        )
+    }
+
+    private fun isoFormatter(): SimpleDateFormat =
+        SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
     companion object {
         private const val MaxPriceLength = 9
-        private const val SubmitDelayMillis = 350L
+        private const val TempUserId = 1L
+        private const val DefaultServiceModeCode = "IN_PERSON"
 
         private val SimulatedEvidence = EvidenceAttachment(
             fileName = "factura_001.jpg",
@@ -109,49 +205,11 @@ class RatingFormViewModel(
             mimeType = "image/jpeg",
         )
 
-        fun factory(businessId: Long): ViewModelProvider.Factory = viewModelFactory {
-            initializer { RatingFormViewModel(businessId) }
+        fun factory(
+            businessId: Long,
+            frontendContractManager: FrontendContractManager,
+        ): ViewModelProvider.Factory = viewModelFactory {
+            initializer { RatingFormViewModel(businessId, frontendContractManager) }
         }
-
-        private fun initialState(businessId: Long) = RatingFormUiState(
-            businessId = businessId,
-            waitTimeOptions = WaitTimeOptions,
-            usageFrequencyOptions = UsageFrequencyOptions,
-            availabilityOptions = AvailabilityOptions,
-            qualityOptions = QualityOptions,
-        )
-
-        private val WaitTimeOptions = listOf(
-            CatalogChoice("UNDER_5", "Menos de 5 min"),
-            CatalogChoice("BETWEEN_5_15", "5 a 15 min"),
-            CatalogChoice("BETWEEN_15_30", "15 a 30 min"),
-            CatalogChoice("OVER_30", "Mas de 30 min"),
-        )
-
-        private val UsageFrequencyOptions = listOf(
-            CatalogChoice("FIRST_TIME", "Primera vez"),
-            CatalogChoice("OCCASIONAL", "Ocasional"),
-            CatalogChoice("MONTHLY", "Mensual"),
-            CatalogChoice("WEEKLY", "Semanal"),
-            CatalogChoice("DAILY", "Diaria"),
-        )
-
-        private val AvailabilityOptions = listOf(
-            CatalogChoice("IMMEDIATE", "Inmediata"),
-            CatalogChoice("SAME_DAY", "Mismo dia"),
-            CatalogChoice("APPOINTMENT", "Con cita"),
-            CatalogChoice("LIMITED", "Limitada"),
-        )
-
-        private val QualityOptions = listOf(
-            QualityChoice(1L, "Trato amable"),
-            QualityChoice(2L, "Precio accesible"),
-            QualityChoice(3L, "Puntualidad"),
-            QualityChoice(4L, "Limpieza"),
-            QualityChoice(5L, "Atencion rapida"),
-            QualityChoice(6L, "Profesionalismo"),
-            QualityChoice(7L, "Producto fresco"),
-            QualityChoice(8L, "Buena ubicacion"),
-        )
     }
 }

@@ -123,6 +123,9 @@ class DefaultAppContainer(context: Context) : AppContainer {
             businessMetricsManager = businessMetricsManager,
             ratingRegistrationManager = ratingRegistrationManager,
             qualityRepository = qualityRepository,
+            bootstrapRepository = bootstrapRepository,
+            remotePlaceRepository = remotePlaceRepository,
+            businessCategoryManager = businessCategoryManager,
         )
     }
 

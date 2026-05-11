@@ -70,7 +70,9 @@ fun CriterioLocalNavGraph(
         }
 
         composable(Routes.Home) {
-            val homeViewModel: HomeViewModel = viewModel()
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModel.factory(appContainer.frontendContractManager),
+            )
             val uiState by homeViewModel.uiState.collectAsState()
             HomeScreen(
                 uiState = uiState,
@@ -93,7 +95,10 @@ fun CriterioLocalNavGraph(
             val businessId = backStackEntry.arguments?.getLong(Routes.BusinessIdArg) ?: 0L
             val viewModel: BusinessDetailViewModel = viewModel(
                 key = "${Routes.BusinessDetail}-$businessId",
-                factory = BusinessDetailViewModel.factory(businessId),
+                factory = BusinessDetailViewModel.factory(
+                    businessId = businessId,
+                    frontendContractManager = appContainer.frontendContractManager,
+                ),
             )
             val uiState by viewModel.uiState.collectAsState()
             BusinessDetailScreen(
@@ -114,7 +119,10 @@ fun CriterioLocalNavGraph(
             val businessId = backStackEntry.arguments?.getLong(Routes.BusinessIdArg) ?: 0L
             val viewModel: RatingFormViewModel = viewModel(
                 key = "${Routes.RatingForm}-$businessId",
-                factory = RatingFormViewModel.factory(businessId),
+                factory = RatingFormViewModel.factory(
+                    businessId = businessId,
+                    frontendContractManager = appContainer.frontendContractManager,
+                ),
             )
             val uiState by viewModel.uiState.collectAsState()
             RatingFormScreen(
@@ -139,7 +147,12 @@ fun CriterioLocalNavGraph(
         }
 
         composable(Routes.Profile) {
-            val viewModel: ProfileViewModel = viewModel()
+            val viewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModel.factory(
+                    userManager = appContainer.userManager,
+                    frontendContractManager = appContainer.frontendContractManager,
+                ),
+            )
             val uiState by viewModel.uiState.collectAsState()
             ProfileScreen(
                 uiState = uiState,

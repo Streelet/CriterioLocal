@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BootstrapRepository {
     suspend fun seedBaseData()
+    suspend fun seedCatalogsOnly()
 }
 
 interface UserRepository {

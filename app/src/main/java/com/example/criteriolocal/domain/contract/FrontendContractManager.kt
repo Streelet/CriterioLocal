@@ -1,9 +1,13 @@
 package com.example.criteriolocal.domain.contract
 
+import com.example.criteriolocal.domain.management.BusinessCategoryManager
 import com.example.criteriolocal.domain.management.RatingRegistrationManager
 import com.example.criteriolocal.domain.metrics.BusinessMetricsManager
+import com.example.criteriolocal.domain.model.NearbyPlaceSearchRequest
 import com.example.criteriolocal.domain.query.BusinessQueryManager
+import com.example.criteriolocal.domain.repository.BootstrapRepository
 import com.example.criteriolocal.domain.repository.QualityRepository
+import com.example.criteriolocal.domain.repository.RemotePlaceRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -12,6 +16,9 @@ class FrontendContractManager(
     private val businessMetricsManager: BusinessMetricsManager,
     private val ratingRegistrationManager: RatingRegistrationManager,
     private val qualityRepository: QualityRepository,
+    private val bootstrapRepository: BootstrapRepository,
+    private val remotePlaceRepository: RemotePlaceRepository,
+    private val businessCategoryManager: BusinessCategoryManager,
 ) {
     fun observeRatingFormCatalogs(): Flow<RatingFormCatalogsDto> {
         return qualityRepository.observeQualities().map { qualities ->
@@ -76,6 +83,28 @@ class FrontendContractManager(
                 ContractResultDto.success(ranking.toDto())
             }
         }
+    }
+
+    suspend fun refreshNearbyPlaces(
+        request: NearbyPlaceSearchRequest,
+    ): ContractResultDto<Int> {
+        return runCatching {
+            bootstrapRepository.seedCatalogsOnly()
+            val result = remotePlaceRepository.searchNearby(request)
+            val linkResults = businessCategoryManager.linkGooglePlacesAutomatically(result.places)
+            linkResults.count { it.isSuccess }
+        }.fold(
+            onSuccess = { count -> ContractResultDto.success(count) },
+            onFailure = { throwable ->
+                ContractResultDto.failure(
+                    ContractErrorDto(
+                        code = "REMOTE_SYNC_FAILED",
+                        field = "remote",
+                        message = throwable.message ?: "Fallo al sincronizar con Google Places.",
+                    ),
+                )
+            },
+        )
     }
 
     suspend fun registerStructuredRating(

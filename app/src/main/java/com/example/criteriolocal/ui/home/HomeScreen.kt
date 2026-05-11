@@ -105,7 +105,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             BusinessList(
-                items = uiState.visibleBusinesses,
+                items = uiState.businesses,
                 onOpenBusiness = onOpenBusiness,
             )
         }
@@ -411,10 +411,15 @@ private fun priceTierOf(maxPrice: Double?): Int {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HomeScreenPreview() {
-    val viewModel = HomeViewModel()
     CriterioLocalTheme {
         HomeScreen(
-            uiState = viewModel.uiState.value,
+            uiState = HomeUiState(
+                isLoading = false,
+                categories = listOf(
+                    CategoryFilterUi(null, "Todos"),
+                    CategoryFilterUi(1L, "Restaurantes"),
+                ),
+            ),
             onQueryChange = {},
             onClearQuery = {},
             onCategorySelected = {},

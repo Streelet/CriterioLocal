@@ -9,9 +9,9 @@ data class HistoryEntry(
 )
 
 data class ProfileUiState(
-    val name: String = "Usuario invitado",
-    val email: String = "invitado@criteriolocal.app",
+    val name: String = "",
+    val email: String = "",
     val history: List<HistoryEntry> = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val errorMessage: String? = null,
 )
