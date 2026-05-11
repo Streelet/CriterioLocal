@@ -78,6 +78,7 @@ data class BusinessDto(
     val categoryId: Long,
     val categoryName: String,
     val status: String,
+    val photoUrl: String? = null,
 )
 
 data class BusinessListItemDto(

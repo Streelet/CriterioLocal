@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,10 +38,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.example.criteriolocal.domain.contract.BusinessDetailDto
 import com.example.criteriolocal.domain.contract.BusinessDto
 import com.example.criteriolocal.domain.contract.BusinessMetricsSummaryDto
@@ -140,7 +144,7 @@ private fun HeaderSection(business: BusinessDto) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        InitialsAvatar(name = business.name)
+        BusinessHeaderImage(photoUrl = business.photoUrl, name = business.name)
         Text(
             text = business.name,
             style = MaterialTheme.typography.displayMedium,
@@ -156,17 +160,41 @@ private fun HeaderSection(business: BusinessDto) {
 }
 
 @Composable
-private fun InitialsAvatar(name: String) {
-    val initial = name.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+private fun BusinessHeaderImage(photoUrl: String?, name: String) {
     Box(
         modifier = Modifier
-            .size(96.dp)
+            .size(112.dp)
+            .clip(CircleShape)
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = CircleShape,
             ),
         contentAlignment = Alignment.Center,
     ) {
+        if (photoUrl.isNullOrBlank()) {
+            InitialsFallback(name = name)
+        } else {
+            AsyncImage(
+                model = photoUrl,
+                contentDescription = name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun InitialsFallback(name: String) {
+    val initial = name.firstOrNull()?.uppercaseChar()?.toString()
+    if (initial.isNullOrBlank()) {
+        Icon(
+            imageVector = Icons.Outlined.Storefront,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(48.dp),
+        )
+    } else {
         Text(
             text = initial,
             style = MaterialTheme.typography.displayLarge,

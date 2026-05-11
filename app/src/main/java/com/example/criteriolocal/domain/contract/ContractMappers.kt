@@ -172,6 +172,7 @@ private fun BusinessWithCategory.toBusinessDto(): BusinessDto {
         categoryId = category.id,
         categoryName = category.name,
         status = business.status.name,
+        photoUrl = business.photoUrl,
     )
 }
 

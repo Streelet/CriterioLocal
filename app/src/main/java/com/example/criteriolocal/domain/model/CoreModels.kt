@@ -26,6 +26,7 @@ data class Business(
     val longitude: Double? = null,
     val categoryId: Long,
     val status: BusinessStatus,
+    val photoUrl: String? = null,
 )
 
 data class Quality(

@@ -67,6 +67,8 @@ data class BusinessEntity(
     @ColumnInfo(name = "category_id")
     val categoryId: Long,
     val status: BusinessStatus,
+    @ColumnInfo(name = "photo_url")
+    val photoUrl: String? = null,
 )
 
 @Entity(

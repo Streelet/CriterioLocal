@@ -62,6 +62,7 @@ internal fun BusinessEntity.asDomain(): Business = Business(
     longitude = longitude,
     categoryId = categoryId,
     status = status,
+    photoUrl = photoUrl,
 )
 
 internal fun Business.asEntity(): BusinessEntity = BusinessEntity(
@@ -75,6 +76,7 @@ internal fun Business.asEntity(): BusinessEntity = BusinessEntity(
     longitude = longitude,
     categoryId = categoryId,
     status = status,
+    photoUrl = photoUrl,
 )
 
 internal fun QualityEntity.asDomain(): Quality = Quality(

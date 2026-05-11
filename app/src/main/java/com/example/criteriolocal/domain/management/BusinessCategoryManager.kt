@@ -67,6 +67,7 @@ class BusinessCategoryManager(
             longitude = place.longitude,
             categoryId = categoryId,
             status = place.asBusinessStatus(),
+            photoUrl = place.photoUrl?.trim()?.takeIf { it.isNotBlank() },
         )
         val savedId = businessRepository.saveBusiness(business)
         return ManagementResult.success(business.copy(id = savedId))

@@ -31,7 +31,7 @@ import com.example.criteriolocal.data.local.entity.UserEntity
         RatingQualityEntity::class,
         EvidenceEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 @TypeConverters(EnumConverters::class)
