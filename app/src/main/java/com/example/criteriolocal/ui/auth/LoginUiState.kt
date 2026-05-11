@@ -9,3 +9,7 @@ data class LoginUiState(
     val canSubmit: Boolean
         get() = email.isNotBlank() && password.isNotBlank() && !isSubmitting
 }
+
+sealed interface LoginEvent {
+    data object SignedIn : LoginEvent
+}

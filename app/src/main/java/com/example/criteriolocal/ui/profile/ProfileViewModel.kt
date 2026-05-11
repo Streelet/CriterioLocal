@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.criteriolocal.core.session.SessionManager
 import com.example.criteriolocal.domain.contract.FrontendContractManager
 import com.example.criteriolocal.domain.management.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,19 +17,34 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(
     private val userManager: UserManager,
     private val frontendContractManager: FrontendContractManager,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfile()
-        observeHistory()
+        val userId = sessionManager.currentUserId
+        if (userId == null) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    errorMessage = "No hay una sesion activa.",
+                )
+            }
+        } else {
+            loadProfile(userId)
+            observeHistory(userId)
+        }
     }
 
-    private fun loadProfile() {
+    fun onSignOut() {
+        sessionManager.clear()
+    }
+
+    private fun loadProfile(userId: Long) {
         viewModelScope.launch {
-            val result = userManager.getBasicProfile(TempUserId)
+            val result = userManager.getBasicProfile(userId)
             val profile = result.value
             if (result.isSuccess && profile != null) {
                 _uiState.update {
@@ -51,9 +67,9 @@ class ProfileViewModel(
         }
     }
 
-    private fun observeHistory() {
+    private fun observeHistory(userId: Long) {
         viewModelScope.launch {
-            frontendContractManager.observeUserRatingHistory(TempUserId).collect { result ->
+            frontendContractManager.observeUserRatingHistory(userId).collect { result ->
                 if (!result.isSuccess) return@collect
                 val ratings = result.data?.ratings.orEmpty()
                 val mapped = ratings.map { rating ->
@@ -75,13 +91,12 @@ class ProfileViewModel(
     }
 
     companion object {
-        private const val TempUserId = 1L
-
         fun factory(
             userManager: UserManager,
             frontendContractManager: FrontendContractManager,
+            sessionManager: SessionManager,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { ProfileViewModel(userManager, frontendContractManager) }
+            initializer { ProfileViewModel(userManager, frontendContractManager, sessionManager) }
         }
     }
 }

@@ -17,3 +17,7 @@ data class RegisterUiState(
         const val MinPasswordLength = 8
     }
 }
+
+sealed interface RegisterEvent {
+    data object Registered : RegisterEvent
+}

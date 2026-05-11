@@ -1,0 +1,73 @@
+Traceback (most recent call last):
+  File "<string>", line 6, in <module>
+    runpy.run_module("pip", run_name="__main__", alter_sys=True)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/__main__.py", line 24, in <module>
+    sys.exit(_main())
+             ~~~~~^^
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/cli/main.py", line 83, in main
+    command = create_command(cmd_name, isolated=("--isolated" in cmd_args))
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/commands/__init__.py", line 121, in create_command
+    module = importlib.import_module(module_path)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/commands/install.py", line 27, in <module>
+    import pip._internal.self_outdated_check  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/self_outdated_check.py", line 19, in <module>
+    from pip._internal.index.package_finder import PackageFinder
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/index/package_finder.py", line 42, in <module>
+    from pip._internal.req import InstallRequirement
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/req/__init__.py", line 12, in <module>
+    from .req_install import InstallRequirement
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/req/req_install.py", line 37, in <module>
+    from pip._internal.operations.install.wheel import install_wheel
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_internal/operations/install/wheel.py", line 33, in <module>
+    from pip._vendor.distlib.scripts import ScriptMaker
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_vendor/distlib/scripts.py", line 16, in <module>
+    from .compat import sysconfig, detect_encoding, ZipFile
+  File "/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl/pip/_vendor/distlib/compat.py", line 81, in <module>
+    import xmlrpc.client as xmlrpclib
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/xmlrpc/client.py", line 138, in <module>
+    from xml.parsers import expat
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/xml/parsers/expat.py", line 4, in <module>
+    from pyexpat import *
+ImportError: dlopen(/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/lib-dynload/pyexpat.cpython-313-darwin.so, 0x0002): Symbol not found: _XML_SetAllocTrackerActivationThreshold
+  Referenced from: <313EFE2B-B8A6-30D0-8805-4227B57A6A54> /opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/lib-dynload/pyexpat.cpython-313-darwin.so
+  Expected in:     <4D62FA9D-D86A-3DD0-98F2-C6D0718849E8> /usr/lib/libexpat.1.dylib
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ensurepip/__main__.py", line 5, in <module>
+    sys.exit(ensurepip._main())
+             ~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ensurepip/__init__.py", line 258, in _main
+    return _bootstrap(
+        root=args.root,
+    ...<4 lines>...
+        default_pip=args.default_pip,
+    )
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ensurepip/__init__.py", line 173, in _bootstrap
+    return _run_pip([*args, "pip"], [os.fsdecode(tmp_wheel_path)])
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ensurepip/__init__.py", line 88, in _run_pip
+    return subprocess.run(cmd, check=True).returncode
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.13_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Users/erick/Library/Application Support/pypoetry/venv/bin/python3.13', '-W', 'ignore::DeprecationWarning', '-c', '\nimport runpy\nimport sys\nsys.path = [\'/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto/pip-26.1-py3-none-any.whl\'] + sys.path\nsys.argv[1:] = [\'install\', \'--no-cache-dir\', \'--no-index\', \'--find-links\', \'/var/folders/hl/0y2g2df5401bwym2q43r1x1m0000gn/T/tmplxqgkjto\', \'--upgrade\', \'pip\']\nrunpy.run_module("pip", run_name="__main__", alter_sys=True)\n']' returned non-zero exit status 1.
+
+Traceback:
+
+  File "<stdin>", line 936, in main
+  File "<stdin>", line 575, in run

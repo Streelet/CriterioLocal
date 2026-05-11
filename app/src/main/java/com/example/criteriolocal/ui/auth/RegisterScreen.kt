@@ -17,23 +17,36 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.criteriolocal.ui.theme.CriterioLocalTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun RegisterScreen(
     uiState: RegisterUiState,
+    events: Flow<RegisterEvent>,
     onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onBackToLogin: () -> Unit,
+    onRegistered: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(events) {
+        events.collect { event ->
+            when (event) {
+                RegisterEvent.Registered -> onRegistered()
+            }
+        }
+    }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -137,11 +150,13 @@ private fun RegisterScreenPreview() {
                 email = "erick@correo.com",
                 password = "12345678",
             ),
+            events = emptyFlow(),
             onNameChange = {},
             onEmailChange = {},
             onPasswordChange = {},
             onSubmit = {},
             onBackToLogin = {},
+            onRegistered = {},
         )
     }
 }

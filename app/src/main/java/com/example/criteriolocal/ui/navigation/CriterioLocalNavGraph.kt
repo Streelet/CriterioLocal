@@ -35,37 +35,44 @@ fun CriterioLocalNavGraph(
         startDestination = startDestination,
     ) {
         composable(Routes.Login) {
-            val viewModel: LoginViewModel = viewModel()
+            val viewModel: LoginViewModel = viewModel(
+                factory = LoginViewModel.factory(
+                    userManager = appContainer.userManager,
+                    sessionManager = appContainer.sessionManager,
+                ),
+            )
             val uiState by viewModel.uiState.collectAsState()
             LoginScreen(
                 uiState = uiState,
+                events = viewModel.events,
                 onEmailChange = viewModel::onEmailChange,
                 onPasswordChange = viewModel::onPasswordChange,
-                onSubmit = {
-                    viewModel.onSubmit()
+                onSubmit = viewModel::onSubmit,
+                onGoToRegister = { navController.navigate(Routes.Register) },
+                onSignedIn = {
                     navController.navigate(Routes.Home) {
                         popUpTo(Routes.Login) { inclusive = true }
                     }
                 },
-                onGoToRegister = { navController.navigate(Routes.Register) },
             )
         }
 
         composable(Routes.Register) {
-            val viewModel: RegisterViewModel = viewModel()
+            val viewModel: RegisterViewModel = viewModel(
+                factory = RegisterViewModel.factory(
+                    userManager = appContainer.userManager,
+                ),
+            )
             val uiState by viewModel.uiState.collectAsState()
             RegisterScreen(
                 uiState = uiState,
+                events = viewModel.events,
                 onNameChange = viewModel::onNameChange,
                 onEmailChange = viewModel::onEmailChange,
                 onPasswordChange = viewModel::onPasswordChange,
-                onSubmit = {
-                    viewModel.onSubmit()
-                    navController.navigate(Routes.Home) {
-                        popUpTo(Routes.Login) { inclusive = true }
-                    }
-                },
+                onSubmit = viewModel::onSubmit,
                 onBackToLogin = { navController.popBackStack() },
+                onRegistered = { navController.popBackStack() },
             )
         }
 
@@ -122,6 +129,7 @@ fun CriterioLocalNavGraph(
                 factory = RatingFormViewModel.factory(
                     businessId = businessId,
                     frontendContractManager = appContainer.frontendContractManager,
+                    sessionManager = appContainer.sessionManager,
                 ),
             )
             val uiState by viewModel.uiState.collectAsState()
@@ -151,6 +159,7 @@ fun CriterioLocalNavGraph(
                 factory = ProfileViewModel.factory(
                     userManager = appContainer.userManager,
                     frontendContractManager = appContainer.frontendContractManager,
+                    sessionManager = appContainer.sessionManager,
                 ),
             )
             val uiState by viewModel.uiState.collectAsState()
@@ -158,6 +167,7 @@ fun CriterioLocalNavGraph(
                 uiState = uiState,
                 onBack = { navController.popBackStack() },
                 onSignOut = {
+                    viewModel.onSignOut()
                     navController.navigate(Routes.Login) {
                         popUpTo(0) { inclusive = true }
                     }

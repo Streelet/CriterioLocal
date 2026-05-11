@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.criteriolocal.core.session.SessionManager
 import com.example.criteriolocal.domain.contract.EvidenceRequestDto
 import com.example.criteriolocal.domain.contract.FrontendContractManager
 import com.example.criteriolocal.domain.contract.RatingRegistrationRequestDto
@@ -23,6 +24,7 @@ import java.util.Locale
 class RatingFormViewModel(
     private val businessId: Long,
     private val frontendContractManager: FrontendContractManager,
+    private val sessionManager: SessionManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RatingFormUiState(businessId = businessId))
@@ -121,12 +123,19 @@ class RatingFormViewModel(
             }
             return
         }
+        val activeUserId = sessionManager.currentUserId
+        if (activeUserId == null) {
+            _uiState.update {
+                it.copy(errorMessage = "Tu sesion expiro. Vuelve a iniciar sesion.")
+            }
+            return
+        }
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
             val today = isoFormatter().format(Date())
             val priceDate = isoFormatter().format(Date(current.priceDateMillis))
             val request = RatingRegistrationRequestDto(
-                userId = TempUserId,
+                userId = activeUserId,
                 businessId = current.businessId,
                 ratedOn = today,
                 reportedPrice = current.priceAsDouble,
@@ -196,7 +205,6 @@ class RatingFormViewModel(
 
     companion object {
         private const val MaxPriceLength = 9
-        private const val TempUserId = 1L
         private const val DefaultServiceModeCode = "IN_PERSON"
 
         private val SimulatedEvidence = EvidenceAttachment(
@@ -208,8 +216,11 @@ class RatingFormViewModel(
         fun factory(
             businessId: Long,
             frontendContractManager: FrontendContractManager,
+            sessionManager: SessionManager,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { RatingFormViewModel(businessId, frontendContractManager) }
+            initializer {
+                RatingFormViewModel(businessId, frontendContractManager, sessionManager)
+            }
         }
     }
 }

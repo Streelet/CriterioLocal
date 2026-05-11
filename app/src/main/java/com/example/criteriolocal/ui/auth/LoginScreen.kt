@@ -24,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,16 +32,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.criteriolocal.ui.theme.CriterioLocalTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun LoginScreen(
     uiState: LoginUiState,
+    events: Flow<LoginEvent>,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onGoToRegister: () -> Unit,
+    onSignedIn: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(events) {
+        events.collect { event ->
+            when (event) {
+                LoginEvent.SignedIn -> onSignedIn()
+            }
+        }
+    }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -214,10 +227,12 @@ private fun LoginScreenPreview() {
     CriterioLocalTheme {
         LoginScreen(
             uiState = LoginUiState(email = "demo@correo.com", password = "12345678"),
+            events = emptyFlow(),
             onEmailChange = {},
             onPasswordChange = {},
             onSubmit = {},
             onGoToRegister = {},
+            onSignedIn = {},
         )
     }
 }

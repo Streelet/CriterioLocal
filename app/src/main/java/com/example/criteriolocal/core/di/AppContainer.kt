@@ -2,6 +2,7 @@ package com.example.criteriolocal.core.di
 
 import android.content.Context
 import com.example.criteriolocal.BuildConfig
+import com.example.criteriolocal.core.session.SessionManager
 import com.example.criteriolocal.data.local.database.CriterioLocalDatabase
 import com.example.criteriolocal.data.remote.api.GooglePlacesApiFactory
 import com.example.criteriolocal.data.repository.DefaultBootstrapRepository
@@ -39,6 +40,7 @@ interface AppContainer {
     val businessQueryManager: BusinessQueryManager
     val businessMetricsManager: BusinessMetricsManager
     val frontendContractManager: FrontendContractManager
+    val sessionManager: SessionManager
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -128,6 +130,8 @@ class DefaultAppContainer(context: Context) : AppContainer {
             businessCategoryManager = businessCategoryManager,
         )
     }
+
+    override val sessionManager: SessionManager by lazy { SessionManager() }
 
     override val bootstrapRepository: BootstrapRepository by lazy {
         DefaultBootstrapRepository(
