@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.criteriolocal.data.local.entity.BusinessEntity
 import com.example.criteriolocal.data.local.entity.CategoryEntity
 import com.example.criteriolocal.data.local.entity.EvidenceEntity
@@ -62,8 +63,22 @@ interface CategoryDao {
 
 @Dao
 interface BusinessDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(business: BusinessEntity): Long
+
+    @Update
+    suspend fun update(business: BusinessEntity)
+
+    @Transaction
+    suspend fun upsertPreservingRelations(business: BusinessEntity): Long {
+        val insertedId = insert(business)
+        if (insertedId != -1L) {
+            return insertedId
+        }
+
+        update(business)
+        return business.id
+    }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(businesses: List<BusinessEntity>)

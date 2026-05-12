@@ -149,7 +149,7 @@ class DefaultBusinessRepository(
     }
 
     override suspend fun saveBusiness(business: com.example.criteriolocal.domain.model.Business): Long {
-        return businessDao.insert(business.asEntity())
+        return businessDao.upsertPreservingRelations(business.asEntity())
     }
 
     override suspend fun saveBusinesses(businesses: List<com.example.criteriolocal.domain.model.Business>) {
