@@ -111,6 +111,14 @@ fun RegisterScreen(
                     )
                 }
 
+                uiState.successMessage?.let { message ->
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
                 PrimaryButton(
                     text = "Crear cuenta",
                     enabled = uiState.canSubmit,

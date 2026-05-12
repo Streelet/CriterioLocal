@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.criteriolocal.domain.management.RegisterUserRequest
 import com.example.criteriolocal.domain.management.UserManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,15 +31,15 @@ class RegisterViewModel(
     val events: Flow<RegisterEvent> = _events.receiveAsFlow()
 
     fun onNameChange(value: String) {
-        _uiState.update { it.copy(name = value, errorMessage = null) }
+        _uiState.update { it.copy(name = value, errorMessage = null, successMessage = null) }
     }
 
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, errorMessage = null) }
+        _uiState.update { it.copy(email = value, errorMessage = null, successMessage = null) }
     }
 
     fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(password = value, errorMessage = null) }
+        _uiState.update { it.copy(password = value, errorMessage = null, successMessage = null) }
     }
 
     fun onSubmit() {
@@ -56,7 +57,10 @@ class RegisterViewModel(
                 ),
             )
             if (result.isSuccess && result.value != null) {
-                _uiState.value = RegisterUiState()
+                _uiState.value = RegisterUiState(
+                    successMessage = "Cuenta creada con exito. Ya puedes iniciar sesion.",
+                )
+                delay(SuccessNavigationDelayMillis)
                 _events.send(RegisterEvent.Registered)
             } else {
                 _uiState.update {
@@ -71,6 +75,8 @@ class RegisterViewModel(
     }
 
     companion object {
+        private const val SuccessNavigationDelayMillis = 1_500L
+
         fun factory(userManager: UserManager): ViewModelProvider.Factory = viewModelFactory {
             initializer { RegisterViewModel(userManager) }
         }

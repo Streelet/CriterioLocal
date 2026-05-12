@@ -6,6 +6,7 @@ data class RegisterUiState(
     val password: String = "",
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null,
+    val successMessage: String? = null,
 ) {
     val canSubmit: Boolean
         get() = name.isNotBlank() &&
